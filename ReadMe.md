@@ -11,7 +11,7 @@ Numerical instability may occur if the application is not limited to 60fps. It m
 Author: Bernhard Matthias Luedtke
 2020-06-04T12:50:00
 
-The Project is based on original work by Prof. Dr.-Ing. Philipp Lensing. It is uploaded here with his approval.
+The Project is loosely based on original work by Prof. Dr.-Ing. Philipp Lensing. It is uploaded here with his approval.
 
 
 Anyone is free to download this project and modify it. There is no guaranteed maintenance or support. If you use code from the project, please give a link to the repository.
