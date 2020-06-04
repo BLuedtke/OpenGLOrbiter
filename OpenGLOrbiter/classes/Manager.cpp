@@ -86,7 +86,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	//-> Using this to slow things down might cause numerical instability!
 }
 
-
+//Passing fullLine=false is experimental and lead to numerical instability. More robust orbit visualization techniques are being thought of.
 void Manager::addSatellite(float semiA, float lAscN, float incli, float argP, float ecc, float trueAnom, bool orbitVis, bool fullLine )
 {
 	OrbitEphemeris o = OrbitEphemeris();

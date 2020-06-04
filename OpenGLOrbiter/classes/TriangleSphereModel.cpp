@@ -8,7 +8,6 @@
 
 TriangleSphereModel::TriangleSphereModel( float Radius, int Stacks, int Slices )
 {
-	std::cout << "TriangleSphereModel Constructor" << std::endl;
     VB.begin();
     for( int i=0; i<Stacks; ++i)
         for( int j=0; j<Slices; ++j)

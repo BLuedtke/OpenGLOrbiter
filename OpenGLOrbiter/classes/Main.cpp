@@ -36,8 +36,8 @@ int main () {
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
     
-    const int WindowWidth = 1800;
-    const int WindowHeight = 1350;
+    const int WindowWidth = 1800*(2.f/3.f);
+    const int WindowHeight = 1350*(2.f/3.f);
     
     GLFWwindow* window = glfwCreateWindow (WindowWidth, WindowHeight, "OpenGLOrbiterV0-0-1", NULL, NULL);
     if (!window) {

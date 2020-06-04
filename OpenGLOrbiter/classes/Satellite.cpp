@@ -10,6 +10,7 @@
 #define sizeFactor 1.0f/6378.0f
 // This mu was determined by trial-and-error, measured by approximating the flight time of the ISS orbit
 // (adjusted so that with speedUp 1.0f, ISS orbit flighttime is about the same as in real life (roughly).
+// In reality, there are more factors influencing this, and it does not scale down the same as the size.
 #define mu 0.000001549
 //Testing other µs
 #define mu2 0.005f
@@ -134,7 +135,6 @@ double Satellite::calcHeronKahanFormula(float a, float b, float c)
 // This can be used to represent the trajectory with lines (see code in Manager.cpp and OrbitLineModel).
 std::vector<Vector> Satellite::calcOrbitVis()
 {
-	std::cout << "calcOrbitVis" << std::endl;
 	std::vector<Vector> resVec;
 	int runner = 0;
 	bool calc = true;
@@ -159,10 +159,13 @@ std::vector<Vector> Satellite::calcOrbitVis()
 		}
 		runner++;
 	}
-	cout << "Runner: " << runner << endl;
-	cout << "Approximate time in minutes: " << (runner*stepper)/60.0f << endl;
+	//cout << "Runner: " << runner << endl;
+	//cout << "Approximate time in minutes: " << (runner*stepper)/60.0f << endl;
 	//cout << "Real ISS time in seconds: " << 92.9f * 60.0f << endl;
-	cout << "-----------" << endl;
+	//cout << "-----------" << endl;
+
+
+	//TODO check why this is making GPS sats look very 'bundled'
 	//this->ephemeris.trueAnomaly = startAngle;
 	return (resVec);
 }
