@@ -97,7 +97,7 @@ double Satellite::calcAngleProgression(float deltaT)
 	double nextAnomaly = 0.0;
 	if (r.length() <= 0.0001f || deltaT <= 0.001f) {
 		//Prevents numerical instability with very very short frametimes or invalid positions (near the origin).
-		nextAnomaly = 0.00001;
+		nextAnomaly = 0.00001 + (double)this->ephemeris.trueAnomaly;
 	}
 	else {
 		// rCandidate = Candidate for new position based on naive progression. 
@@ -187,7 +187,7 @@ std::vector<Vector> Satellite::calcOrbitVis()
 		}
 		runner++;
 	}
-	cout << "Amount of points for Orbit visualization: " << runner << endl;
+	//cout << "Amount of points for Orbit visualization: " << runner << endl;
 	//cout << "Approximate time in minutes: " << (runner*stepper)/60.0f << endl;
 	//cout << "Real ISS time in seconds: " << 92.9f * 60.0f << endl;
 	//cout << "-----------" << endl;
