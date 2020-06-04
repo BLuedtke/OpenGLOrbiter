@@ -10,7 +10,8 @@
 // This mu was determined by trial-and-error, measured by approximating the flight time of the ISS orbit
 // (adjusted so that with speedUp 1.0f, ISS orbit flighttime is about the same as in real life (roughly).
 // In reality, there are more factors influencing this, and it does not scale down the same as the size.
-#define mu 0.000001549
+// If you want to change it, change it in the OrbitalEphemeris.cpp as well.
+#define mu 0.0000015399
 
 using std::cout;
 using std::endl;
@@ -154,7 +155,6 @@ double Satellite::calcHeronKahanFormula(double a, double b, double c)
 		std::cerr << "Invalid TriangleB. a: " << a << "; b: " << b << endl;
 		return 0.00001;	// Emergency replacement, basically.
 	}
-	
 }
 
 //Method for going through the orbit and calculating a collection of points along the orbit
@@ -162,19 +162,14 @@ double Satellite::calcHeronKahanFormula(double a, double b, double c)
 std::vector<Vector> Satellite::calcOrbitVis()
 {
 	std::vector<Vector> resVec;
-	int runner = 0;
-	bool calc = true;
+	
 	double startAngle = this->ephemeris.trueAnomaly;
 	this->ephemeris.trueAnomaly = 0.0f;
 
-	// timeCorr -> Speed up frametimes for calculating the lines/points, as otherwise a GPS Satellite orbit would have > 1 500 000 lines. That would be a bit excessive.
-	float timeCorr = ((1.0f - this->ephemeris.eccentricity) * (this->ephemeris.semiMajorA*this->ephemeris.semiMajorA*6.0f));
-	//Prevent timeCorr from becoming 0 due to ephemeris.eccentricity being 0 (which occurs with a perfectly circular orbit).
-	timeCorr = fmaxf(timeCorr, 1.0f);
+	int runner = 0;
+	bool calc = true;
+	float stepper = 0.005f;
 
-	float stepper = (1.0f/60.0f)*timeCorr;
-	stepper = 0.005f;
-	//cout << "Stepper " << stepper << endl;
 	while (runner < 900000 && calc) {
 		if (this->ephemeris.trueAnomaly > 2.0*M_PI+0.0001) {
 			//Stop point generation after one orbit
@@ -187,11 +182,11 @@ std::vector<Vector> Satellite::calcOrbitVis()
 		}
 		runner++;
 	}
-	//cout << "Amount of points for Orbit visualization: " << runner << endl;
-	//cout << "Approximate time in minutes: " << (runner*stepper)/60.0f << endl;
-	//cout << "Real ISS time in seconds: " << 92.9f * 60.0f << endl;
-	//cout << "-----------" << endl;
-
 	this->ephemeris.trueAnomaly = startAngle;
+
+
+	//Just for testing:
+	cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getCircularOrbitalPeriod() << endl;
+
 	return (resVec);
 }

@@ -1,6 +1,11 @@
 // Author: Bernhard Luedtke
 // Created on 2020-06-02
 #include "OrbitEphemeris.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
+#ifndef mu
+#define mu 0.0000015399
+#endif // !mu
 
 
 OrbitEphemeris::OrbitEphemeris()
@@ -19,6 +24,7 @@ OrbitEphemeris::OrbitEphemeris(float semiA, float ecc, float incli,
 	semiMajorA(semiA), eccentricity(ecc), inclination(incli),
 	longitudeAsc(longAscNode), argPeriaps(argP), trueAnomaly(trueAnomal)
 {
+	;
 }
 
 float OrbitEphemeris::getOrCreateSemiMinorP()
@@ -27,6 +33,11 @@ float OrbitEphemeris::getOrCreateSemiMinorP()
 		this->semiMinorP = semiMajorA*(1.0f - eccentricity * eccentricity);
 	}
 	return semiMinorP;
+}
+
+float OrbitEphemeris::getCircularOrbitalPeriod()
+{
+	return 2.0f * (float)M_PI * std::sqrtf(std::powf(semiMajorA, 3.0f) / (float)mu);
 }
 
 void OrbitEphemeris::calcPQWMatrix()

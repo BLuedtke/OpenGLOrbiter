@@ -47,7 +47,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
 	addEarth();
 	//Sample with all parameters. This height corresponds to GEO.
-	addSatellite(42164.0f * sizeF, 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
+	addSatellite(42164.0f * sizeF, 0.0f, 0.0f, 0.0f, 0.2f, 0.0, true, true);
 
 	// THIS IS THE GPS 'CONSTELLATION'
 	addSatellite(26550.0f * sizeF, 302.8080f, 56.01f, 279.2863f, 0.0186085f, 0);
