@@ -69,9 +69,9 @@ void Satellite::calcOrbitPos(float deltaT, bool switchMU) {
 	float semiMinorP = ephemeris.getOrCreateSemiMinorP();
 
 	this->ephemeris.trueAnomaly = (float)calcAngleProgression(deltaT * speedUp);
-	float posAngle = this->ephemeris.trueAnomaly;
-	float rScal = semiMinorP / (1 + ephemeris.eccentricity * cosf(posAngle));
-	r = P * rScal * cosf(posAngle) + Q* rScal * sinf(posAngle);
+	double posAngle = this->ephemeris.trueAnomaly;
+	double rScal = semiMinorP / (1 + ephemeris.eccentricity * cos(posAngle));
+	r = P * rScal * cos(posAngle) + Q* rScal * sin(posAngle);
 	Vector temp = P * -1.0f*sinf(posAngle)+ Q * (ephemeris.eccentricity+cosf(posAngle));
 	if (switchMU) {
 		//Testing
@@ -162,15 +162,15 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	std::vector<Vector> resVec;
 	int runner = 0;
 	bool calc = true;
-	float maxAngle = 0.0f;
-	float startAngle = this->ephemeris.trueAnomaly;
+	double maxAngle = 0.0;
+	double startAngle = this->ephemeris.trueAnomaly;
 	this->ephemeris.trueAnomaly = 0.0f;
-	
-	// timeCorr -> Speed up frametimes for calculating the lines/points, as otherwise a GPS Satellite orbit would have > 1 500 000 lines. That would be a bit excessive.
-	float timeCorr = ((1.0f - this->ephemeris.eccentricity) * (this->ephemeris.semiMajorA*this->ephemeris.semiMajorA));
 
+	// timeCorr -> Speed up frametimes for calculating the lines/points, as otherwise a GPS Satellite orbit would have > 1 500 000 lines. That would be a bit excessive.
+	float timeCorr = ((1.0f - this->ephemeris.eccentricity) * (this->ephemeris.semiMajorA*this->ephemeris.semiMajorA*6.0f));
 	//Prevent timeCorr from becoming 0 due to ephemeris.eccentricity being 0 (which occurs with a perfectly circular orbit).
 	timeCorr = fmaxf(timeCorr, 1.0f);
+
 	float stepper = (1.0f/60.0f)*timeCorr;
 	//cout << "Stepper " << stepper << endl;
 	while (runner < 900000 && calc) {
@@ -197,7 +197,7 @@ std::vector<Vector> Satellite::calcOrbitVis()
 		}
 		runner++;
 	}
-	//cout << "Runner: " << runner << endl;
+	cout << "Amount of points for Orbit visualization: " << runner << endl;
 	//cout << "Approximate time in minutes: " << (runner*stepper)/60.0f << endl;
 	//cout << "Real ISS time in seconds: " << 92.9f * 60.0f << endl;
 	//cout << "-----------" << endl;

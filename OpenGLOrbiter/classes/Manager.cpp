@@ -22,6 +22,10 @@
 #include "Satellite.h"
 #include "FlatColorShader.h"
 
+//Debug/Time measurement
+#include <iostream>
+#include <chrono>
+
 #ifdef WIN32
 #define ASSET_DIRECTORY "../../assets/"
 #else
@@ -78,13 +82,14 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 
 
 	// THIS IS A ISS-LIKE SATELLITE
+
 	addSatellite(6796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.0f);
 
 	/**/
 	addEquatorLinePlane();
 
 	//THIS SPEEDS UP EVERYTHING BY THE FACTOR
-	speedUpSats(15.0f);
+	speedUpSats(1.0f);
 	//-> Using this to slow things down might cause numerical instability!
 }
 
