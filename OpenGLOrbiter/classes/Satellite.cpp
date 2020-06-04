@@ -8,8 +8,10 @@
 
 #define G 8.6852f
 #define sizeFactor 1.0f/6378.0f
-// Mit dem µ passt die Laufzeit der ISS
+// This mu was determined by trial-and-error, measured by approximating the flight time of the ISS orbit
+// (adjusted so that with speedUp 1.0f, ISS orbit flighttime is about the same as in real life (roughly).
 #define mu 0.000001549
+//Testing other µs
 #define mu2 0.005f
 
 using std::cout;
@@ -52,9 +54,9 @@ void Satellite::update(float deltaT)
 		f.translation(r);
 		uTransform = f;
 	}
-	catch (const std::exception&)
+	catch (const std::exception& e)
 	{
-		std::cout << "MIST" << std::endl;
+		std::cout << e.what() << std::endl;
 	}
 }
 
@@ -70,13 +72,16 @@ void Satellite::calcOrbitPos(float deltaT, bool switchMU) {
 	r = P * rScal * cosf(posAngle) + Q* rScal * sinf(posAngle);
 	Vector temp = P * -1.0f*sinf(posAngle)+ Q * (ephemeris.eccentricity+cosf(posAngle));
 	if (switchMU) {
+		//Testing
 		v = temp * (float)std::sqrt(mu2 / semiMinorP);
 	}
 	else {
 		v = temp * (float)std::sqrt(mu / semiMinorP);
 	}
-	
 	//cout << v.length() << endl;
+	// If you want to check: the length of h (r cross v) should always be the same for one satellite at any point in orbit
+	// Might be influenced by floating point inaccuracies
+	
 	//Vector h = r.cross(v);
 	//cout << h.length() << endl;
 }
@@ -125,6 +130,8 @@ double Satellite::calcHeronKahanFormula(float a, float b, float c)
 	return 2.0*atan(std::sqrt((term1) / (term2)));;
 }
 
+//Method for going through the orbit and calculating a collection of points along the orbit
+// This can be used to represent the trajectory with lines (see code in Manager.cpp and OrbitLineModel).
 std::vector<Vector> Satellite::calcOrbitVis()
 {
 	std::cout << "calcOrbitVis" << std::endl;
@@ -159,98 +166,3 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	//this->ephemeris.trueAnomaly = startAngle;
 	return (resVec);
 }
-
-
-
-
-//Neues R vorberechnen-> Winkel ausrechnen -> v0 neu setzen?
-/*
-float newAnomaly = -1.0f;
-//rCandidate.print();
-if (r.length() > 0.00001f && v.length()>0.0001f) {
-	Vector rCandidate = r + v * deltaT;
-	float preCos = rCandidate.dot(r) / (fabsf(r.length())*fabsf(rCandidate.length()));
-	//cout << "PreCos: " << preCos << endl;
-	if (preCos > 1.0f) {
-		preCos = 1.0f;
-	}
-	float pAngle = acos(preCos);
-	//cout << "pAngle: " << pAngle << endl;
-	newAnomaly = lastV02 + pAngle;
-	while (newAnomaly > M_PI*2.0f) {
-		newAnomaly = newAnomaly - ((float)M_PI*2.0f);
-	}
-	//cout << "New: " << newAnomaly << endl;
-	lastV02 = newAnomaly;
-}
-
-float v0;
-if (newAnomaly > -0.5f) {
-	v0 = newAnomaly;
-}
-else {
-	v0 = deltaT * v.length() * speedFactor + posAngle;
-	while (v0 > M_PI*2.0f) {
-		v0 = v0 - ((float)M_PI*2.0f);
-	}
-	//cout << "Old: " << v0 << endl;
-	//cout << "-----" << endl;
-	posAngle = v0;
-}
-*/
-
-
-
-//ijk.rotationY(ephemeris.argPeriaps);
-	//ijk.rotationX(ephemeris.inclination);
-	/*
-	if (r.length() < 0.001f) {
-		Matrix a = Matrix().rotationY(ephemeris.longitudeAsc);
-		Matrix b = Matrix().rotationX(ephemeris.inclination);
-		//ijk = ijk * b * a;
-		//ijk.right().print();
-		//ijk.up().print();
-		//ijk.forward().print();
-		//cout << "---" << endl;
-		Vector axis = Vector(0,1,0);
-		//Vector axis = ijk.up();
-
-		Matrix c = Matrix().rotationAxis(axis, ephemeris.argPeriaps);
-		//c.right().print();
-		//c.up().print();
-		//c.forward().print();
-		//cout << "---" << endl;
-
-		ijk = ijk * c;
-
-		//ijk.rotationAxis(axis, ephemeris.argPeriaps);
-
-		//ijk = ijk.rotationY(ephemeris.longitudeAsc);
-		//Jetzt für argPeriapsis um achse des .up() Vectors drehen
-		ijk.right().print();
-		ijk.up().print();
-		ijk.forward().print();
-
-		cout << "-----------" << endl;
-		ijk = ijk.rotationX(DEG_TO_RAD(90.0f));
-		ijk.right().print();
-		ijk.up().print();
-		ijk.forward().print();
-
-		//ijk.left().print();
-
-		float r00 = cosf(ephemeris.longitudeAsc) * cosf(ephemeris.argPeriaps) - sinf(ephemeris.longitudeAsc) * sinf(ephemeris.argPeriaps) * cosf(ephemeris.inclination);
-		float r01 = -1.0f * cosf(ephemeris.longitudeAsc) * sinf(ephemeris.argPeriaps) - sinf(ephemeris.longitudeAsc) * cosf(ephemeris.argPeriaps) * cosf(ephemeris.inclination);
-		float r02 = sinf(ephemeris.longitudeAsc) * sinf(ephemeris.inclination);
-		float r10 = sinf(ephemeris.longitudeAsc) * cosf(ephemeris.argPeriaps) + cosf(ephemeris.longitudeAsc)*sinf(ephemeris.argPeriaps)*cosf(ephemeris.inclination);
-		float r11 = -1.0f * sinf(ephemeris.longitudeAsc) * sinf(ephemeris.argPeriaps) + cosf(ephemeris.longitudeAsc)*cosf(ephemeris.argPeriaps)*cosf(ephemeris.inclination);
-		float r12 = -1.0f * cosf(ephemeris.longitudeAsc) * sinf(ephemeris.inclination);
-		float r20 = sinf(ephemeris.argPeriaps) * sinf(ephemeris.inclination);
-		float r21 = cosf(ephemeris.argPeriaps) * sinf(ephemeris.inclination);
-		float r22 = cosf(ephemeris.inclination);
-		cout << r00 << "   " << r01 << "   " << r02 << endl;
-		cout << r10 << "   " << r11 << "   " << r12 << endl;
-		cout << r20 << "   " << r21 << "   " << r22 << endl;
-
-	}
-	/**/

@@ -89,25 +89,9 @@ bool Vector::operator==(const Vector & v) const
 	return false;
 }
 
-/*
-//Führt zu einem seltsamen Bild
-float sqrt14(float n)
-{
-
-	//__m128 cache1 = reinterpret_cast<__m128&>(n);
-	//__m128 mmsqrt = _mm_rsqrt_ss(cache1);
-	//cache1 = _mm_mul_ss(cache1, mmsqrt);
-	//return reinterpret_cast<float&>(cache1);
-
-	//oder (deutlich langsamer als sqrtf):
-	__m128 mmsqrt = _mm_sqrt_ss(reinterpret_cast<__m128&>(n));
-	return reinterpret_cast<float&>(mmsqrt);
-}/**/
-
 float Vector::length() const
 {
 	return sqrtf(this->lengthSquared());
-	//return sqrt14(this->lengthSquared());
 }
 
 
@@ -136,13 +120,13 @@ bool Vector::triangleIntersection(const Vector& d, const Vector& a, const Vector
 	Vector n = ((b - a).cross(c - a)).normalize();
 	//n.normalize();
 	float ndL = n.dot(d);
-	//Strahl und Ebene Parallel?
+	//Beam and plane in parallel?
 	if (fabs(ndL) <= 1e-20f) {
 		return false;
 	}
 	float dl = n.dot(a);
 	s = (dl - n.dot(*this)) / ndL;
-	// s zu klein?
+	
 	if (s < 1e-20f) {
 		return false;
 	}
@@ -165,7 +149,6 @@ bool Vector::triangleIntersectionInformed(const Vector & d, const Vector & a, co
 	}
 	float dl = n.dot(a);
 	s = (dl - n.dot(*this)) / ndL;
-	// s zu klein?
 	if (s < 1e-20f) {
 		return false;
 	}
