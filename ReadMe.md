@@ -1,4 +1,4 @@
-#OpenGLOrbiter
+# OpenGLOrbiter
 
 C++ OpenGL Project for visualising satellite orbits around earth based on their orbital elements.
 
