@@ -12,9 +12,6 @@
 // In reality, there are more factors influencing this, and it does not scale down the same as the size.
 #define mu 0.000001549
 
-//For testing other µs
-#define mu2 0.005f
-
 using std::cout;
 using std::endl;
 
@@ -62,24 +59,29 @@ void Satellite::update(float deltaT)
 }
 
 // Calculate the new position on orbit based on the current state + frameTime (deltaT).
-void Satellite::calcOrbitPos(float deltaT, bool switchMU) {
+// Give fixedStep = true and a value for 'step' if the frametime should be ignored. -> Usually only used for calculation of Orbit-Visualization Points.
+void Satellite::calcOrbitPos(float deltaT, bool fixedStep) {
+	
+	double posAngle = 0.0;
+	if (fixedStep == true && deltaT > 0.0f) {
+		// fixedStep -> directly interpret deltaT as the progression of true anomaly.
+		this->ephemeris.trueAnomaly = this->ephemeris.trueAnomaly + deltaT;
+		posAngle = this->ephemeris.trueAnomaly;
+	} else {
+		//"Normal" calculation for the new angle.
+		this->ephemeris.trueAnomaly = (float)calcAngleProgression(deltaT * speedUp);
+		posAngle = this->ephemeris.trueAnomaly;
+	}
+
+	float semiMinorP = ephemeris.getOrCreateSemiMinorP();
+	double rScal = semiMinorP / (1 + ephemeris.eccentricity * cos(posAngle));
+
 	Matrix pqw = this->ephemeris.getOrCreatePQW();
 	Vector P = pqw.right();
 	Vector Q = pqw.backward();
-	float semiMinorP = ephemeris.getOrCreateSemiMinorP();
-
-	this->ephemeris.trueAnomaly = (float)calcAngleProgression(deltaT * speedUp);
-	double posAngle = this->ephemeris.trueAnomaly;
-	double rScal = semiMinorP / (1 + ephemeris.eccentricity * cos(posAngle));
 	r = P * rScal * cos(posAngle) + Q* rScal * sin(posAngle);
 	Vector temp = P * -1.0f*sinf(posAngle)+ Q * (ephemeris.eccentricity+cosf(posAngle));
-	if (switchMU) {
-		//Testing
-		v = temp * (float)std::sqrt(mu2 / semiMinorP);
-	}
-	else {
-		v = temp * (float)std::sqrt(mu / semiMinorP);
-	}
+	v = temp * (float)std::sqrt(mu / semiMinorP);
 	//cout << v.length() << endl;
 
 	// If you want to check: the length of h (r cross v) should always be the same for one satellite at any point in orbit
@@ -162,7 +164,6 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	std::vector<Vector> resVec;
 	int runner = 0;
 	bool calc = true;
-	double maxAngle = 0.0;
 	double startAngle = this->ephemeris.trueAnomaly;
 	this->ephemeris.trueAnomaly = 0.0f;
 
@@ -172,28 +173,17 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	timeCorr = fmaxf(timeCorr, 1.0f);
 
 	float stepper = (1.0f/60.0f)*timeCorr;
+	stepper = 0.005f;
 	//cout << "Stepper " << stepper << endl;
 	while (runner < 900000 && calc) {
-		if (maxAngle >= (float)M_PI && this->ephemeris.trueAnomaly < 0.6f) {
+		if (this->ephemeris.trueAnomaly > 2.0*M_PI+0.0001) {
 			//Stop point generation after one orbit
-			//cout << "Stopping now " << endl;
-			calc = false;
-			
+			break;
 		}
-		//if (runner % 5000 == 0) {
-			//cout << "True Anomaly: " << this->ephemeris.trueAnomaly << endl;
-			//cout << "MaxAngle: " << maxAngle << endl;
-		//}
-		this->calcOrbitPos(stepper);
-		if (this->ephemeris.trueAnomaly > maxAngle) {
-			maxAngle = this->ephemeris.trueAnomaly;
-		}
+		this->calcOrbitPos(stepper,true);
 		if (r.lengthSquared() > 0.000001f) {
-			//Only add the point if it's not the origin (the first time this is called, r might be 0,0,0)
+			//Only add the point if it's not the origin
 			resVec.push_back(r);
-		}
-		else {
-			//cout << "CalcorbitVis r was indeed = origin." << endl;
 		}
 		runner++;
 	}

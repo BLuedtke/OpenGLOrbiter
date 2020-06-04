@@ -79,6 +79,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	addSatellite(26550.0f * sizeF, 357.4799, 56.04f, 30.9207, 0.0081731f, 0);
 	addSatellite(26550.0f * sizeF, 356.6780, 55.09f, 353.3877, 0.0053773f, 0);
 	/**/
+	addSatellite(26550.0f * sizeF, 356.6780, 55.09f, 353.3877, 0.0053773f, 0);
 
 
 	// THIS IS A ISS-LIKE SATELLITE
