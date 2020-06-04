@@ -74,14 +74,14 @@
     <ClCompile Include="classes\VertexBuffer.cpp">
       <Filter>Quelldateien\ViewHandling</Filter>
     </ClCompile>
-    <ClCompile Include="classes\Satellite.cpp">
-      <Filter>Quelldateien\Management</Filter>
-    </ClCompile>
     <ClCompile Include="classes\Camera.cpp">
       <Filter>Quelldateien\ViewHandling</Filter>
     </ClCompile>
     <ClCompile Include="classes\OrbitEphemeris.cpp">
       <Filter>Quelldateien\DataClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\Satellite.cpp">
+      <Filter>Quelldateien\Models</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -130,14 +130,14 @@
     <ClInclude Include="classes\VertexBuffer.h">
       <Filter>Quelldateien\ViewHandling</Filter>
     </ClInclude>
-    <ClInclude Include="classes\Satellite.h">
-      <Filter>Quelldateien\Management</Filter>
-    </ClInclude>
     <ClInclude Include="classes\Camera.h">
       <Filter>Quelldateien\ViewHandling</Filter>
     </ClInclude>
     <ClInclude Include="classes\OrbitEphemeris.h">
       <Filter>Quelldateien\DataClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\Satellite.h">
+      <Filter>Quelldateien\Models</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

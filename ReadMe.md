@@ -21,6 +21,7 @@ Anyone is free to download this project and modify it. There is no guaranteed ma
 
 ## What does the code do?
 Good question. This text will walk you through the most important classes and the way things are currently done. This is, of course, subject to change.
+(Note: Running the code in Debug mode will take a really long time with many sats).
 
 ### Main
 Where do we start? With main, of course. Main.cpp implements int main(){...} and therefore serves as the starting point. Here, a glfwWindow is opened. For every frame, the Manager (called 'App') is updated (.update) and drawn.

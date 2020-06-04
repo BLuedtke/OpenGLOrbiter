@@ -12,7 +12,7 @@ public:
 	float inclination;  // i
 	float longitudeAsc; // Omega
 	float argPeriaps;	// w (small Omega)
-	float trueAnomaly;  // T
+	double trueAnomaly;  // T
 	
 	float semiMinorP = 0.0f;
 	float getOrCreateSemiMinorP();

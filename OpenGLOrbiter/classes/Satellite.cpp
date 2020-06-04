@@ -67,7 +67,8 @@ void Satellite::calcOrbitPos(float deltaT, bool switchMU) {
 	Vector P = pqw.right();
 	Vector Q = pqw.backward();
 	float semiMinorP = ephemeris.getOrCreateSemiMinorP();
-	this->ephemeris.trueAnomaly = calcAngleProgression(deltaT * speedUp);
+
+	this->ephemeris.trueAnomaly = (float)calcAngleProgression(deltaT * speedUp);
 	float posAngle = this->ephemeris.trueAnomaly;
 	float rScal = semiMinorP / (1 + ephemeris.eccentricity * cosf(posAngle));
 	r = P * rScal * cosf(posAngle) + Q* rScal * sinf(posAngle);
@@ -89,11 +90,12 @@ void Satellite::calcOrbitPos(float deltaT, bool switchMU) {
 }
 
 // Calculate the new true anomaly (angle that describes where the satellite is along it's orbit) based on current state + frameTime (deltaT)
-float Satellite::calcAngleProgression(float deltaT)
+double Satellite::calcAngleProgression(float deltaT)
 {
+	double nextAnomaly = 0.0;
 	if (r.length() <= 0.0001f || deltaT <= 0.001f) {
 		//Prevents numerical instability with very very short frametimes or invalid positions (near the origin).
-		this->ephemeris.trueAnomaly = 0.00001f + this->ephemeris.trueAnomaly;
+		nextAnomaly = 0.00001;
 	}
 	else {
 		// rCandidate = Candidate for new position based on naive progression. 
@@ -102,11 +104,12 @@ float Satellite::calcAngleProgression(float deltaT)
 		// This technique is very far from perfect, might be replaced.
 		Vector rCandidate = r + v * (deltaT);
 		// Get the angle between current position (r) and proposed new naive position (rCandidate).
-		this->ephemeris.trueAnomaly += calcHeronKahanFormula(rCandidate, r);
-		while (this->ephemeris.trueAnomaly > M_PI*2.0f) {
-			this->ephemeris.trueAnomaly -= (M_PI*2.0);
+		nextAnomaly = calcHeronKahanFormula(rCandidate, r) + (double) this->ephemeris.trueAnomaly;
+		while (nextAnomaly > (M_PI*2.0f)) {
+			nextAnomaly = nextAnomaly - (M_PI*2.0);
 		}
 	}
+	return nextAnomaly;
 }
 
 //https://scicomp.stackexchange.com/questions/27689/numerically-stable-way-of-computing-angles-between-vectors
@@ -119,7 +122,7 @@ double Satellite::calcHeronKahanFormula(Vector k, Vector i)
 		float a = k.length();
 		float b = i.length();
 		float c = (k - i).length();
-		double angle = calcHeronKahanFormula(a, b, c);
+		angle = calcHeronKahanFormula(a, b, c);
 	}
 	catch (const std::exception& e)
 	{
@@ -135,23 +138,25 @@ double Satellite::calcHeronKahanFormula(float a, float b, float c)
 {
 	double tMu = 0.000001;
 	if (a >= (b - 0.0001f)) {
-		if (b >= c && c >= 0) {
+		if (b >= c && c >= 0.0f) {
 			tMu = c - (a - b);
 		}
 		else if (c > b && b >= 0) {
 			tMu = b - (a - c);
 		}
+		double term1 = ((a - b) + c)*tMu;
+		double term2 = (a + (b + c))*((a - c) + b);
+		return 2.0*atan(std::sqrt((term1) / (term2)));;
 	}
 	else {
 		std::cerr << "Invalid TriangleB. a: " << a << "; b: " << b << endl;
+		return 0.00001;	// Emergency replacement, basically.
 	}
-	double term1 = ((a - b) + c)*tMu;
-	double term2 = (a + (b + c))*((a - c) + b);
-	return 2.0*atan(std::sqrt((term1) / (term2)));;
+	
 }
 
 //Method for going through the orbit and calculating a collection of points along the orbit
-// This can be used to represent the trajectory with lines (see code in Manager.cpp and OrbitLineModel).
+// This can be used to represent the trajectory with lines (used for OrbitLineModel).
 std::vector<Vector> Satellite::calcOrbitVis()
 {
 	std::vector<Vector> resVec;
@@ -167,21 +172,32 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	//Prevent timeCorr from becoming 0 due to ephemeris.eccentricity being 0 (which occurs with a perfectly circular orbit).
 	timeCorr = fmaxf(timeCorr, 1.0f);
 	float stepper = (1.0f/60.0f)*timeCorr;
-	
-	while (runner < 9000000 && calc) {
-		if (maxAngle > (float)M_PI && this->ephemeris.trueAnomaly < 0.1f) {
+	cout << "Stepper " << stepper << endl;
+	while (runner < 900000 && calc) {
+		if (maxAngle >= (float)M_PI && this->ephemeris.trueAnomaly < 0.6f) {
+			//Stop point generation after one orbit
+			cout << "Stopping now " << endl;
 			calc = false;
+			
+		}
+		if (runner % 5000 == 0) {
+			cout << "True Anomaly: " << this->ephemeris.trueAnomaly << endl;
+			cout << "MaxAngle: " << maxAngle << endl;
 		}
 		this->calcOrbitPos(stepper);
 		if (this->ephemeris.trueAnomaly > maxAngle) {
 			maxAngle = this->ephemeris.trueAnomaly;
 		}
 		if (r.lengthSquared() > 0.000001f) {
+			//Only add the point if it's not the origin (the first time this is called, r might be 0,0,0)
 			resVec.push_back(r);
+		}
+		else {
+			//cout << "CalcorbitVis r was indeed = origin." << endl;
 		}
 		runner++;
 	}
-	//cout << "Runner: " << runner << endl;
+	cout << "Runner: " << runner << endl;
 	//cout << "Approximate time in minutes: " << (runner*stepper)/60.0f << endl;
 	//cout << "Real ISS time in seconds: " << 92.9f * 60.0f << endl;
 	//cout << "-----------" << endl;

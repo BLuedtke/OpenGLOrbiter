@@ -11,7 +11,7 @@ OrbitEphemeris::OrbitEphemeris()
 	inclination = 0.0f;
 	longitudeAsc = 0.0f;
 	argPeriaps = 0.0f;
-	trueAnomaly = 0.0f;
+	trueAnomaly = 0.0;
 }
 
 OrbitEphemeris::OrbitEphemeris(float semiA, float ecc, float incli, 

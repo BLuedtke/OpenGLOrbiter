@@ -42,7 +42,7 @@ using std::cout;
 Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
 	addEarth();
-	
+	/*
 	// THIS IS THE GPS 'CONSTELLATION'
 	addSatellite(26550.0f * sizeF, 302.8080, 56.01f, 279.2863, 0.0186085f, 0);
 	addSatellite(26550.0f * sizeF, 302.6010, 56.06f, 35.3566, 0.0113652f, 0);
@@ -78,7 +78,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 
 
 	// THIS IS A ISS-LIKE SATELLITE
-	//addSatellite(6796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.0f);
+	addSatellite(6796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.0f);
 
 	/**/
 	addEquatorLinePlane();
