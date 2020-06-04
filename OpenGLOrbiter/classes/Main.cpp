@@ -36,6 +36,7 @@ int main () {
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
     
+	//TODO: Add recognition of user screen size and adjust the window size accordingly.
     const int WindowWidth = 1800*(2.f/3.f);
     const int WindowHeight = 1350*(2.f/3.f);
     

@@ -9,6 +9,7 @@
 
 #define WEAK_EPSILON 1e-4f
 
+//Matrix Default constructor initialises the identity (matrix).
 Matrix::Matrix()
 {
 	m00 = 1;	m01 = 0;	m02 = 0;	m03 = 0;

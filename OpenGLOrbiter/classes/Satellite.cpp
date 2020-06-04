@@ -6,13 +6,13 @@
 #define DEG_TO_RAD(x) ((x)*0.0174532925f)
 #define RAD_TO_DEG(x) ((x)*57.2957795f)
 
-#define G 8.6852f
 #define sizeFactor 1.0f/6378.0f
 // This mu was determined by trial-and-error, measured by approximating the flight time of the ISS orbit
 // (adjusted so that with speedUp 1.0f, ISS orbit flighttime is about the same as in real life (roughly).
 // In reality, there are more factors influencing this, and it does not scale down the same as the size.
 #define mu 0.000001549
-//Testing other µs
+
+//For testing other µs
 #define mu2 0.005f
 
 using std::cout;
@@ -42,10 +42,10 @@ Satellite::Satellite() : TriangleSphereModel(1.0f, 18, 36)
 
 Satellite::~Satellite()
 {
-	//No dynamically (new) allocated memory in this class so far
+	;
 }
 
-
+// Call this every frame to update the satellite's position in orbit.
 void Satellite::update(float deltaT)
 {
 	try
@@ -61,7 +61,7 @@ void Satellite::update(float deltaT)
 	}
 }
 
-
+// Calculate the new position on orbit based on the current state + frameTime (deltaT).
 void Satellite::calcOrbitPos(float deltaT, bool switchMU) {
 	Matrix pqw = this->ephemeris.getOrCreatePQW();
 	Vector P = pqw.right();
@@ -80,38 +80,57 @@ void Satellite::calcOrbitPos(float deltaT, bool switchMU) {
 		v = temp * (float)std::sqrt(mu / semiMinorP);
 	}
 	//cout << v.length() << endl;
+
 	// If you want to check: the length of h (r cross v) should always be the same for one satellite at any point in orbit
 	// Might be influenced by floating point inaccuracies
-	
+	// Vector h is the specific angular momentum 
 	//Vector h = r.cross(v);
 	//cout << h.length() << endl;
 }
 
+// Calculate the new true anomaly (angle that describes where the satellite is along it's orbit) based on current state + frameTime (deltaT)
 float Satellite::calcAngleProgression(float deltaT)
 {
-	float sAnomaly = 0.0f;
 	if (r.length() <= 0.0001f || deltaT <= 0.001f) {
-		sAnomaly = 0.00001f + this->ephemeris.trueAnomaly;
+		//Prevents numerical instability with very very short frametimes or invalid positions (near the origin).
+		this->ephemeris.trueAnomaly = 0.00001f + this->ephemeris.trueAnomaly;
 	}
 	else {
+		// rCandidate = Candidate for new position based on naive progression. 
+		// Since the speed vector v can't "curve" with the orbit, this can't be used as a new position directly.
+		// It can however be used to approximate the 'new' true Anomaly, which can then be used to calculate the new position more accurately.
+		// This technique is very far from perfect, might be replaced.
 		Vector rCandidate = r + v * (deltaT);
-		float a = rCandidate.length();
-		float b = r.length();
-		float c = (rCandidate - r).length();
-		double angle = calcHeronKahanFormula(a, b, c);
-		sAnomaly = (float)(angle + this->ephemeris.trueAnomaly);
-		while (sAnomaly > M_PI*2.0f) {
-			sAnomaly = sAnomaly - ((float)M_PI*2.0f);
+		// Get the angle between current position (r) and proposed new naive position (rCandidate).
+		this->ephemeris.trueAnomaly += calcHeronKahanFormula(rCandidate, r);
+		while (this->ephemeris.trueAnomaly > M_PI*2.0f) {
+			this->ephemeris.trueAnomaly -= (M_PI*2.0);
 		}
 	}
-	if (sAnomaly <= this->ephemeris.trueAnomaly + 0.0000000001 && this->ephemeris.trueAnomaly - sAnomaly <= 0.1f) {
-		cout << "Angle not large enough" << endl;
-	}
-	//posAngle = sAnomaly;
-	return sAnomaly;
 }
 
 //https://scicomp.stackexchange.com/questions/27689/numerically-stable-way-of-computing-angles-between-vectors
+//Returns the angle between the two vectors, given that |k| >= |i| -> The length of the vectors is used for angle calculation. Needs to be used carefully.
+double Satellite::calcHeronKahanFormula(Vector k, Vector i)
+{
+	double angle = 0.0;
+	try
+	{
+		float a = k.length();
+		float b = i.length();
+		float c = (k - i).length();
+		double angle = calcHeronKahanFormula(a, b, c);
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+	return angle;
+}
+
+//https://scicomp.stackexchange.com/questions/27689/numerically-stable-way-of-computing-angles-between-vectors
+// Calculates the angle between two Vectors. I advise using the overloaded methods accepting 2 Vectors.
+// Much much better then using 'standard' cos(angle) = (V1 dot V2) / (|V1| * |V2|)
 double Satellite::calcHeronKahanFormula(float a, float b, float c)
 {
 	double tMu = 0.000001;
@@ -141,11 +160,14 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	float maxAngle = 0.0f;
 	float startAngle = this->ephemeris.trueAnomaly;
 	this->ephemeris.trueAnomaly = 0.0f;
-
+	
+	// timeCorr -> Speed up frametimes for calculating the lines/points, as otherwise a GPS Satellite orbit would have > 1 500 000 lines. That would be a bit excessive.
 	float timeCorr = ((1.0f - this->ephemeris.eccentricity) * (this->ephemeris.semiMajorA*this->ephemeris.semiMajorA));
+
+	//Prevent timeCorr from becoming 0 due to ephemeris.eccentricity being 0 (which occurs with a perfectly circular orbit).
 	timeCorr = fmaxf(timeCorr, 1.0f);
 	float stepper = (1.0f/60.0f)*timeCorr;
-
+	
 	while (runner < 9000000 && calc) {
 		if (maxAngle > (float)M_PI && this->ephemeris.trueAnomaly < 0.1f) {
 			calc = false;
@@ -164,8 +186,6 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	//cout << "Real ISS time in seconds: " << 92.9f * 60.0f << endl;
 	//cout << "-----------" << endl;
 
-
-	//TODO check why this is making GPS sats look very 'bundled'
-	//this->ephemeris.trueAnomaly = startAngle;
+	this->ephemeris.trueAnomaly = startAngle;
 	return (resVec);
 }

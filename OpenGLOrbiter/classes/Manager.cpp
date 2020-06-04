@@ -44,37 +44,39 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	addEarth();
 	
 	// THIS IS THE GPS 'CONSTELLATION'
-	addSatellite(26550.0f * sizeF, 302.8080, 56.01f, 279.2863, 0.0186085f, 254.5174);
-	addSatellite(26550.0f * sizeF, 302.6010, 56.06f, 35.3566, 0.0113652f, 136.3870);
-	addSatellite(26550.0f * sizeF, 301.5764, 56.01f, 65.4874, 0.0078611f, 295.3208);
-	addSatellite(26550.0f * sizeF, 297.6432, 55.32f, 52.6418, 0.0090654f, 306.9898);
-	addSatellite(26550.0f * sizeF, 295.5525, 54.82f, 10.4744, 0.0046989f, 349.6080);
-	addSatellite(26550.0f * sizeF, 239.0614, 54.86f, 6.1746, 0.0094815f, 98.5184);
-	addSatellite(26550.0f * sizeF, 239.5030, 53.77f, 198.5504, 0.0047049f, 161.3238);
-	addSatellite(26550.0f * sizeF, 238.2884, 54.61f, 223.4894, 0.0140270f, 135.4512);
-	addSatellite(26550.0f * sizeF, 234.0640, 53.65f, 37.1639, 0.0095254f, 323.5441);
-	addSatellite(26550.0f * sizeF, 184.8549, 55.46f, 60.1978,	0.0039199f, 300.2586);
-	addSatellite(26550.0f * sizeF, 182.1325, 55.03f, 250.6634, 0.0116744f, 147.5515);
-	addSatellite(26550.0f * sizeF, 176.1806, 54.06f, 235.4258, 0.0144104f, 120.3242);
-	addSatellite(26550.0f * sizeF, 171.5119, 53.18f, 49.6816, 0.0121179f, 311.4242);
-	addSatellite(26550.0f * sizeF, 177.0815, 55.09f, 222.6391, 0.0041555f, 137.0996);
-	addSatellite(26550.0f * sizeF, 179.3429, 55.09f, 223.8194, 0.0008908f, 107.8708);
-	addSatellite(26550.0f * sizeF, 176.5922, 54.58f, 105.8600, 0.0012930f, 254.3447);
-	addSatellite(26550.0f * sizeF, 117.4385, 55.09f, 211.3608, 0.0057282f, 148.2781);
-	addSatellite(26550.0f * sizeF, 109.8874, 53.52f, 154.9692, 0.0050379f, 17.1089);
-	addSatellite(26550.0f * sizeF, 113.0046, 53.32f, 292.6875, 0.0073969f, 66.5037);
-	addSatellite(26550.0f * sizeF, 115.7546, 54.58f, 44.0539, 0.0057386f, 234.7595);
-	addSatellite(26550.0f * sizeF, 117.5668, 55.33f, 36.8613, 0.0027203f, 323.3042);
-	addSatellite(26550.0f * sizeF, 53.7124, 54.61f, 283.9817, 0.019f, 81.7615);
-	addSatellite(26550.0f * sizeF, 53.5235, 54.96f, 266.9234, 0.0199562f, 275.3942);
-	addSatellite(26550.0f * sizeF, 57.9073, 56.16f, 44.0277, 0.0097490f, 139.3342);
-	addSatellite(26550.0f * sizeF, 57.4396, 56.13f, 296.4550, 0.0021052f, 63.3459);
-	addSatellite(26550.0f * sizeF,   3.4232, 56.27f, 93.3527,	0.0092063f, 83.8550);
-	addSatellite(26550.0f * sizeF,   0.7710, 56.37f, 266.0448,	0.0134264f, 269.5906);
-	addSatellite(26550.0f * sizeF,   1.4579, 56.47f, 114.9660,	0.0012895f, 52.6548);
-	addSatellite(26550.0f * sizeF, 357.4799, 56.04f, 30.9207, 0.0081731f, 329.5994);
-	addSatellite(26550.0f * sizeF, 356.6780, 55.09f, 353.3877, 0.0053773f, 6.5808);
+	addSatellite(26550.0f * sizeF, 302.8080, 56.01f, 279.2863, 0.0186085f, 0);
+	addSatellite(26550.0f * sizeF, 302.6010, 56.06f, 35.3566, 0.0113652f, 0);
+	addSatellite(26550.0f * sizeF, 301.5764, 56.01f, 65.4874, 0.0078611f, 0);
+	addSatellite(26550.0f * sizeF, 297.6432, 55.32f, 52.6418, 0.0090654f, 0);
+	addSatellite(26550.0f * sizeF, 295.5525, 54.82f, 10.4744, 0.0046989f, 0);
+	addSatellite(26550.0f * sizeF, 239.0614, 54.86f, 6.1746, 0.0094815f, 0);
+	addSatellite(26550.0f * sizeF, 239.5030, 53.77f, 198.5504, 0.0047049f, 0);
+	addSatellite(26550.0f * sizeF, 238.2884, 54.61f, 223.4894, 0.0140270f, 0);
+	addSatellite(26550.0f * sizeF, 234.0640, 53.65f, 37.1639, 0.0095254f, 0);
+	addSatellite(26550.0f * sizeF, 184.8549, 55.46f, 60.1978, 0.0039199f, 0);
+	addSatellite(26550.0f * sizeF, 182.1325, 55.03f, 250.6634, 0.0116744f, 0);
+	addSatellite(26550.0f * sizeF, 176.1806, 54.06f, 235.4258, 0.0144104f, 0);
+	addSatellite(26550.0f * sizeF, 171.5119, 53.18f, 49.6816, 0.0121179f, 0);
+	addSatellite(26550.0f * sizeF, 177.0815, 55.09f, 222.6391, 0.0041555f, 0);
+	addSatellite(26550.0f * sizeF, 179.3429, 55.09f, 223.8194, 0.0008908f, 0);
+	addSatellite(26550.0f * sizeF, 176.5922, 54.58f, 105.8600, 0.0012930f, 0);
+	addSatellite(26550.0f * sizeF, 117.4385, 55.09f, 211.3608, 0.0057282f, 0);
+	addSatellite(26550.0f * sizeF, 109.8874, 53.52f, 154.9692, 0.0050379f, 0);
+	addSatellite(26550.0f * sizeF, 113.0046, 53.32f, 292.6875, 0.0073969f, 0);
+	addSatellite(26550.0f * sizeF, 115.7546, 54.58f, 44.0539, 0.0057386f, 0);
+	addSatellite(26550.0f * sizeF, 117.5668, 55.33f, 36.8613, 0.0027203f, 0);
+	addSatellite(26550.0f * sizeF, 53.7124, 54.61f, 283.9817, 0.019f, 0);
+	addSatellite(26550.0f * sizeF, 53.5235, 54.96f, 266.9234, 0.0199562f, 0);
+	addSatellite(26550.0f * sizeF, 57.9073, 56.16f, 44.0277, 0.0097490f, 0);
+	addSatellite(26550.0f * sizeF, 57.4396, 56.13f, 296.4550, 0.0021052f, 0);
+	addSatellite(26550.0f * sizeF,   3.4232, 56.27f, 93.3527,	0.0092063f, 0);
+	addSatellite(26550.0f * sizeF,   0.7710, 56.37f, 266.0448,	0.0134264f, 0);
+	addSatellite(26550.0f * sizeF,   1.4579, 56.47f, 114.9660,	0.0012895f, 0);
+	addSatellite(26550.0f * sizeF, 357.4799, 56.04f, 30.9207, 0.0081731f, 0);
+	addSatellite(26550.0f * sizeF, 356.6780, 55.09f, 353.3877, 0.0053773f, 0);
 	/**/
+
+
 	// THIS IS A ISS-LIKE SATELLITE
 	//addSatellite(6796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.0f);
 
@@ -132,7 +134,6 @@ void Manager::addEquatorLinePlane()
 	uModel->setShader(std::move(uCShader));
 	uModel->transform(baseTransform);
 	uModels.push_back(std::move(uModel));
-	//uModels.push_back(std::move(uModel));
 }
 
 void Manager::addEarth()
@@ -147,8 +148,7 @@ void Manager::addEarth()
 
 	uModel->transform(baseTransform);
 	uModel->setShader(std::move(uShader));
-	//uModels.push_back(std::move(uModel));
-	//This uses the planets std::vector for preparing to let earth rotate -> will be implemented soon
+	//This uses the planets std::vector for preparing to let earth rotate -> will be implemented sometime soon (tm)
 	planets.push_back(std::move(uModel));
 }
 
