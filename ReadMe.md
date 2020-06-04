@@ -9,7 +9,7 @@ This is a Visual Studio Project (2017 Enterprise). Trying to get the project run
 Numerical instability may occur if the application is not limited to 60fps. It might work, it might not.
 
 Author: Bernhard Matthias Luedtke
-2020-06-04T12:50:00
+2020-06-04
 
 The Project is loosely based on original work by Prof. Dr.-Ing. Philipp Lensing. It is uploaded here with his approval.
 
