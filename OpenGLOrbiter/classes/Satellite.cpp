@@ -172,18 +172,18 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	//Prevent timeCorr from becoming 0 due to ephemeris.eccentricity being 0 (which occurs with a perfectly circular orbit).
 	timeCorr = fmaxf(timeCorr, 1.0f);
 	float stepper = (1.0f/60.0f)*timeCorr;
-	cout << "Stepper " << stepper << endl;
+	//cout << "Stepper " << stepper << endl;
 	while (runner < 900000 && calc) {
 		if (maxAngle >= (float)M_PI && this->ephemeris.trueAnomaly < 0.6f) {
 			//Stop point generation after one orbit
-			cout << "Stopping now " << endl;
+			//cout << "Stopping now " << endl;
 			calc = false;
 			
 		}
-		if (runner % 5000 == 0) {
-			cout << "True Anomaly: " << this->ephemeris.trueAnomaly << endl;
-			cout << "MaxAngle: " << maxAngle << endl;
-		}
+		//if (runner % 5000 == 0) {
+			//cout << "True Anomaly: " << this->ephemeris.trueAnomaly << endl;
+			//cout << "MaxAngle: " << maxAngle << endl;
+		//}
 		this->calcOrbitPos(stepper);
 		if (this->ephemeris.trueAnomaly > maxAngle) {
 			maxAngle = this->ephemeris.trueAnomaly;
@@ -197,7 +197,7 @@ std::vector<Vector> Satellite::calcOrbitVis()
 		}
 		runner++;
 	}
-	cout << "Runner: " << runner << endl;
+	//cout << "Runner: " << runner << endl;
 	//cout << "Approximate time in minutes: " << (runner*stepper)/60.0f << endl;
 	//cout << "Real ISS time in seconds: " << 92.9f * 60.0f << endl;
 	//cout << "-----------" << endl;
