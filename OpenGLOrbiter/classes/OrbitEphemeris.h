@@ -1,3 +1,5 @@
+// Author: Bernhard Luedtke
+// Created on 2020-06-02
 #ifndef OrbitEphemeris_hpp
 #define OrbitEphemeris_hpp
 #include "Matrix.h"

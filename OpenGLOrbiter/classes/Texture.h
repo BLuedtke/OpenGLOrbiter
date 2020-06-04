@@ -1,20 +1,25 @@
 //  Modified by: Bernhard Luedtke
 //  Author of the original Class:
     //  Created by Philipp Lensing.
-    //  Copyright © 2014 Philipp Lensing.
+
 
 #ifndef Texture_hpp
 #define Texture_hpp
 
 #include <iostream>
 #include <map>
-
 #ifdef WIN32
 #include <GL/glew.h>
 #include <glfw/glfw3.h>
 #else
+#ifdef __APPLE__
+#define GLFW_INCLUDE_GLCOREARB
+#define GLFW_INCLUDE_GLEXT
+#include <glfw/glfw3.h>
+#else
 #include "GL\glew.h"
 #include "GLFW\glfw3.h"
+#endif
 #endif
 
 class RGBImage;

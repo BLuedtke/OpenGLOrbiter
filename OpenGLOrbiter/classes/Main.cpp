@@ -1,10 +1,19 @@
 //  Modified by: Bernhard Luedtke
 //  Author of the original Class:
     //  Created by Philipp Lensing.
-    //  Copyright © 2016 Philipp Lensing.
+#ifdef WIN32
+#include <GL/glew.h>
+#include <glfw/glfw3.h>
+#else
+#ifdef __APPLE__
+#define GLFW_INCLUDE_GLCOREARB
+#define GLFW_INCLUDE_GLEXT
+#include <glfw/glfw3.h>
+#else
 #include "GL\glew.h"
 #include "GLFW\glfw3.h"
-
+#endif
+#endif
 #include <stdio.h>
 #include "Manager.h"
 #include "FreeImage.h"
@@ -38,9 +47,11 @@ int main () {
     }
     glfwMakeContextCurrent (window);
 	
-	//Next 2 lines probably unnecessary for Apple Users
+
+#ifndef __APPLE__
 	glewExperimental = GL_TRUE;
 	glewInit();
+#endif // !__APPLE__
 
 	PrintOpenGLVersion();
     {

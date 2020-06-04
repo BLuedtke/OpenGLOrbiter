@@ -1,4 +1,5 @@
-//  Author: Bernhard Luedtke. 2020
+//  Author: Bernhard Luedtke
+//
 
 #include <string>
 #include <sstream>

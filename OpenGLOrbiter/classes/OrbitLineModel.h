@@ -1,3 +1,4 @@
+//Author: Bernhard Luedtke
 
 #ifndef OrbitLineModel_hpp
 #define OrbitLineModel_hpp

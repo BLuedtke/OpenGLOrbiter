@@ -1,4 +1,4 @@
-//	Author: Bernhard Luedtke. 2020.
+//	Author: Bernhard Luedtke
 
 #ifndef Vector_hpp
 #define Vector_hpp

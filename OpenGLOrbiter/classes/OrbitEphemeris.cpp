@@ -1,3 +1,5 @@
+// Author: Bernhard Luedtke
+// Created on 2020-06-02
 #include "OrbitEphemeris.h"
 
 

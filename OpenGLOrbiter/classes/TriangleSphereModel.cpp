@@ -1,7 +1,6 @@
 //  Modified by: Bernhard Luedtke
 //  Author of the original Class:
     //  Created by Philipp Lensing.
-    //  Copyright © 2016 Philipp Lensing.
 
 #include "TriangleSphereModel.h"
 #define _USE_MATH_DEFINES

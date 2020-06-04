@@ -1,7 +1,6 @@
 //  Modified by: Bernhard Luedtke
 //  Author of the original Class:
     //  Created by Philipp Lensing.
-    //  Copyright © 2014 Philipp Lensing.
 
 
 #include "Texture.h"

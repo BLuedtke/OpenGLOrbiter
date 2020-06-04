@@ -1,3 +1,5 @@
+// Author: Bernhard Luedtke
+
 #include "vector.h"
 #include <assert.h>
 #include <math.h>

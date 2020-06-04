@@ -1,7 +1,6 @@
 //  Modified by: Bernhard Luedtke
 //  Author of the original Class:
     //  Created by Philipp Lensing on 19.09.16.
-    //  Copyright © 2016 Philipp Lensing. All rights reserved.
 
 #ifndef Manager_hpp
 #define Manager_hpp

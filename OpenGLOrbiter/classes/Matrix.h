@@ -1,7 +1,6 @@
 //  Modified by: Bernhard Luedtke
 //  Author of the original Class:
     //  Created by Philipp Lensing on 03.11.14.
-    //  Copyright © 2014 Philipp Lensing. All rights reserved.
 
 
 #ifndef Matrix_hpp

@@ -1,3 +1,5 @@
+//Author: Bernhard Luedtke
+
 #include "OrbitLineModel.h"
 
 OrbitLineModel::OrbitLineModel(std::vector<Vector> points, bool fullLine)

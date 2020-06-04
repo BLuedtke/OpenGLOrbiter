@@ -1,4 +1,4 @@
-
+//Author: Bernhard Luedtke
 #ifndef Satellite_hpp
 #define Satellite_hpp
 

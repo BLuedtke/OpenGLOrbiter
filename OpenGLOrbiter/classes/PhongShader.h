@@ -1,7 +1,7 @@
 //  Modified by: Bernhard Luedtke
 //  Author of the original Class:
     //  Created by Philipp Lensing.
-    //  Copyright © 2016 Philipp Lensing. All rights reserved.
+
 
 #ifndef PhongShader_hpp
 #define PhongShader_hpp
@@ -11,8 +11,14 @@
 #include <GL/glew.h>
 #include <glfw/glfw3.h>
 #else
+#ifdef __APPLE__
+#define GLFW_INCLUDE_GLCOREARB
+#define GLFW_INCLUDE_GLEXT
+#include <glfw/glfw3.h>
+#else
 #include "GL\glew.h"
 #include "GLFW\glfw3.h"
+#endif
 #endif
 #include <iostream>
 #include <assert.h>
