@@ -32,7 +32,7 @@ protected:
 	std::vector<std::unique_ptr<TriangleSphereModel>> planets;
 
 	void addEarth();
-	void addSatellite(float semiA, float lAscN, float incli, float argP, float ecc = 0.0f, float trueAnom = 0.0f, bool orbitVis = true, bool fullLine = true);
+	void addSatellite(float semiA, float lAscN, float incli, float argP, float ecc = 0.0f, double trueAnom = 0.0, bool orbitVis = true, bool fullLine = true);
 	void addSatellite(OrbitEphemeris o, bool orbitVis = true, bool fullLine = true, Color satColor = Color(.3f,.3f,.8f));
 	void speedUpSats(float speedUp);
 	void addEquatorLinePlane();

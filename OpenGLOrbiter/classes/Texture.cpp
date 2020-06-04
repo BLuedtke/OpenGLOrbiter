@@ -222,6 +222,7 @@ bool Texture::load( const char* Filename)
     unsigned int bpp = FreeImage_GetBPP(pBitmap);
     assert(bpp==32||bpp==16||bpp==24);
     
+	//TODO rewrite this portion to get rid of new entirely.
     unsigned char* data = new unsigned char[Width* Height*4];
     unsigned char* dataPtr = data-1;
     
@@ -258,7 +259,7 @@ bool Texture::load( const char* Filename)
     glBindTexture(GL_TEXTURE_2D, m_TextureID);
     glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8.0f);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (GLint)8.0f);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -285,7 +286,7 @@ bool Texture::create( unsigned int width, unsigned int height, unsigned char* da
     glBindTexture(GL_TEXTURE_2D, m_TextureID);
     glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0f);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (GLint)16.0f);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);    
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	
