@@ -5,18 +5,139 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Headerdateien">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="Ressourcendateien">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Quelldateien\Shader">
+      <UniqueIdentifier>{f69a8392-b922-4102-9fc2-cd6b8d2798c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Management">
+      <UniqueIdentifier>{9825b990-b288-4f5a-9a2b-be7fec0ea7dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Models">
+      <UniqueIdentifier>{6e1233ad-19fd-4088-8167-d8f2c1dd6ad2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\DataClasses">
+      <UniqueIdentifier>{731b0ae2-e4b0-4899-b786-d0c17e291800}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\ViewHandling">
+      <UniqueIdentifier>{81233543-1504-4ee2-b0fd-392135d88de2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="OpenGLOrbiter.cpp">
-      <Filter>Quelldateien</Filter>
+    <ClCompile Include="classes\Main.cpp">
+      <Filter>Quelldateien\Management</Filter>
     </ClCompile>
+    <ClCompile Include="classes\Manager.cpp">
+      <Filter>Quelldateien\Management</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\LinePlaneModel.cpp">
+      <Filter>Quelldateien\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\OrbitLineModel.cpp">
+      <Filter>Quelldateien\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\StandardModel.cpp">
+      <Filter>Quelldateien\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\TriangleSphereModel.cpp">
+      <Filter>Quelldateien\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\FlatColorShader.cpp">
+      <Filter>Quelldateien\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\PhongShader.cpp">
+      <Filter>Quelldateien\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\StandardShader.cpp">
+      <Filter>Quelldateien\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\Color.cpp">
+      <Filter>Quelldateien\DataClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\Matrix.cpp">
+      <Filter>Quelldateien\DataClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\Vector.cpp">
+      <Filter>Quelldateien\DataClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\RGBImage.cpp">
+      <Filter>Quelldateien\ViewHandling</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\Texture.cpp">
+      <Filter>Quelldateien\ViewHandling</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\IndexBuffer.cpp">
+      <Filter>Quelldateien\ViewHandling</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\VertexBuffer.cpp">
+      <Filter>Quelldateien\ViewHandling</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\Satellite.cpp">
+      <Filter>Quelldateien\Management</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\Camera.cpp">
+      <Filter>Quelldateien\ViewHandling</Filter>
+    </ClCompile>
+    <ClCompile Include="classes\OrbitEphemeris.cpp">
+      <Filter>Quelldateien\DataClasses</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="classes\Manager.h">
+      <Filter>Quelldateien\Management</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\LinePlaneModel.h">
+      <Filter>Quelldateien\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\OrbitLineModel.h">
+      <Filter>Quelldateien\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\StandardModel.h">
+      <Filter>Quelldateien\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\TriangleSphereModel.h">
+      <Filter>Quelldateien\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\FlatColorShader.h">
+      <Filter>Quelldateien\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\PhongShader.h">
+      <Filter>Quelldateien\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\StandardShader.h">
+      <Filter>Quelldateien\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\Color.h">
+      <Filter>Quelldateien\DataClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\Matrix.h">
+      <Filter>Quelldateien\DataClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\Vector.h">
+      <Filter>Quelldateien\DataClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\RGBImage.h">
+      <Filter>Quelldateien\ViewHandling</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\Texture.h">
+      <Filter>Quelldateien\ViewHandling</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\IndexBuffer.h">
+      <Filter>Quelldateien\ViewHandling</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\VertexBuffer.h">
+      <Filter>Quelldateien\ViewHandling</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\Satellite.h">
+      <Filter>Quelldateien\Management</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\Camera.h">
+      <Filter>Quelldateien\ViewHandling</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\OrbitEphemeris.h">
+      <Filter>Quelldateien\DataClasses</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

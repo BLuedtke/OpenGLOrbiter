@@ -1,6 +1,14 @@
 // OpenGLOrbiter.cpp : Diese Datei enthält die Funktion "main". Hier beginnt und endet die Ausführung des Programms.
 //
-
+#ifdef WIN32
+#include <GL/glew.h>
+#include <glfw/glfw3.h>
+#else
+#define GLFW_INCLUDE_GLCOREARB
+#define GLFW_INCLUDE_GLEXT
+#include <glfw/glfw3.h>
+#endif
+#include <stdio.h>
 #include <iostream>
 
 int main()
