@@ -20,7 +20,6 @@ public:
     
     static unsigned char convertColorChannel( float f);
 protected:
-    Color* m_Image;
     unsigned int m_Height;
     unsigned int m_Width;
     std::vector<std::vector<Color>> matrix;

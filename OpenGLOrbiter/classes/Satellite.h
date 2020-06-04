@@ -22,7 +22,7 @@ private:
 	Vector v;
 	Vector r;
 	void calcOrbitPos(float deltaT, bool fixedStep = false);
-	double calcHeronKahanFormula(float a, float b, float c);
+	double calcHeronKahanFormula(double a, double b, double c);
 	double calcHeronKahanFormula(Vector k, Vector i);
 	double calcAngleProgression(float deltaT);
 

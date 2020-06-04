@@ -74,13 +74,13 @@ void Satellite::calcOrbitPos(float deltaT, bool fixedStep) {
 	}
 
 	float semiMinorP = ephemeris.getOrCreateSemiMinorP();
-	double rScal = semiMinorP / (1 + ephemeris.eccentricity * cos(posAngle));
+	float rScal = semiMinorP / (1 + ephemeris.eccentricity * (float)cos(posAngle));
 
 	Matrix pqw = this->ephemeris.getOrCreatePQW();
 	Vector P = pqw.right();
 	Vector Q = pqw.backward();
-	r = P * rScal * cos(posAngle) + Q* rScal * sin(posAngle);
-	Vector temp = P * -1.0f*sinf(posAngle)+ Q * (ephemeris.eccentricity+cosf(posAngle));
+	r = P * rScal * (float)cos(posAngle) + Q* rScal * (float)sin(posAngle);
+	Vector temp = P * -1.0f*(float)sin(posAngle)+ Q * (ephemeris.eccentricity+ (float)cos(posAngle));
 	v = temp * (float)std::sqrt(mu / semiMinorP);
 	//cout << v.length() << endl;
 
@@ -124,7 +124,7 @@ double Satellite::calcHeronKahanFormula(Vector k, Vector i)
 		float a = k.length();
 		float b = i.length();
 		float c = (k - i).length();
-		angle = calcHeronKahanFormula(a, b, c);
+		angle = calcHeronKahanFormula((double)a, (double)b, (double)c);
 	}
 	catch (const std::exception& e)
 	{
@@ -136,7 +136,7 @@ double Satellite::calcHeronKahanFormula(Vector k, Vector i)
 //https://scicomp.stackexchange.com/questions/27689/numerically-stable-way-of-computing-angles-between-vectors
 // Calculates the angle between two Vectors. I advise using the overloaded methods accepting 2 Vectors.
 // Much much better then using 'standard' cos(angle) = (V1 dot V2) / (|V1| * |V2|)
-double Satellite::calcHeronKahanFormula(float a, float b, float c)
+double Satellite::calcHeronKahanFormula(double a, double b, double c)
 {
 	double tMu = 0.000001;
 	if (a >= (b - 0.0001f)) {

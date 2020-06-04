@@ -64,8 +64,10 @@ PhongShader::PhongShader() :
 	DiffuseTexture(Texture::defaultTex()),
 	UpdateState(0xFFFFFFFF)
 {
-	ShaderProgram = createShaderProgram(VertexShaderCode, FragmentShaderCode);
-	assignLocations();
+	std::string* cv = new std::string(VertexShaderCode);
+	std::string* cf = new std::string(FragmentShaderCode);
+	ShaderProgram = createShaderProgram(cv, cf);
+	assignLocations(); //Handles initialisation of Locations
 }
 void PhongShader::assignLocations()
 {

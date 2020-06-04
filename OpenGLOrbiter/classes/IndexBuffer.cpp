@@ -8,7 +8,7 @@
 
 IndexBuffer::IndexBuffer() : BufferInitialized(false), WithinBeginAndEnd(false), IndexFormat(GL_UNSIGNED_INT), IndexCount(0)
 {
-    ;
+	IBO = 0;
 }
 
 IndexBuffer::~IndexBuffer()

@@ -24,7 +24,9 @@ const char *CFragmentShaderCode =
 
 FlatColorShader::FlatColorShader() : Col(0.2f,0.2f,1.0f)
 {
-    ShaderProgram = createShaderProgram(CVertexShaderCode, CFragmentShaderCode );
+	std::string* cv = new std::string(CVertexShaderCode);
+	std::string* cf = new std::string(CFragmentShaderCode);
+    ShaderProgram = createShaderProgram(cv, cf);
 	
     ColorLoc = glGetUniformLocation(ShaderProgram, "Color");
     assert(ColorLoc>=0);
@@ -34,7 +36,9 @@ FlatColorShader::FlatColorShader() : Col(0.2f,0.2f,1.0f)
 }
 FlatColorShader::FlatColorShader(const Color & c) : Col(c)
 {
-	ShaderProgram = createShaderProgram(CVertexShaderCode, CFragmentShaderCode);
+	std::string* cv = new std::string(CVertexShaderCode);
+	std::string* cf = new std::string(CFragmentShaderCode);
+	ShaderProgram = createShaderProgram(cv, cf);
 	ColorLoc = glGetUniformLocation(ShaderProgram, "Color");
 	assert(ColorLoc >= 0);
 	ModelViewProjLoc = glGetUniformLocation(ShaderProgram, "ModelViewProjMat");

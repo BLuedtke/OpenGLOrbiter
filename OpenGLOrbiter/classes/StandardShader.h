@@ -37,8 +37,8 @@ public:
     virtual void deactivate() const;
     virtual void activate(const BaseCamera& Cam) const;
 
-protected:
-    GLuint createShaderProgram( const char* VScode, const char* FScode );
+protected:    
+	GLuint createShaderProgram(std::string* VS_String, std::string* FS_String);
     GLuint ShaderProgram;
     Matrix ModelTransform;
     static const StandardShader* ShaderNowPiped;
