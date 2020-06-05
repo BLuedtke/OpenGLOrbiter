@@ -74,7 +74,7 @@ This problem classically involves the solution of Kepler's Equation and is often
 	v	Speed Vector
 	... at given time t
 */
-void Satellite::testKeplerProblem(float timePassed)
+void Satellite::calcKeplerProblem(float timePassed)
 {
 	try
 	{
@@ -82,7 +82,7 @@ void Satellite::testKeplerProblem(float timePassed)
 		float xn = computeXfirstGuess(timePassed);
 		//cout << "First guess for x = " << xn << endl;
 		float zn = computeZ(xn);
-		float tn = computeTnByXn(xn, zn);
+		float tn = computeTnByXn(xn, zn);//NAN if eccentricity = 1
 		float x = xnNewtonIteration(xn, timePassed, tn, zn);
 		//cout << "Determined x: " << x << endl;
 		//Evaluate f and g from equations (4.4-31) and (4.4-34);then compute r and r.length from equation (4.4-18)
@@ -91,18 +91,35 @@ void Satellite::testKeplerProblem(float timePassed)
 		//cout << "f: " << f << "; g: " << g << endl;
 		//Now compute r by 4.4-18 (r.length() = rLength)
 		Vector rN = computeRVec(f, g);
+		float rLtest = computeNewDtDxWithMU(x);
+		if (rN.length() - rLtest > 0.01f) {
+			cout << "rNLength: " << rN.length() << "; TestLengthR: " << rLtest << endl;
+		}
 		//Evaluate fD and gD from equations 4.4-35 and 4.4-36
-		//float fD = computeSmallFDerivative(x, rN.length());
-		//float gD = computeSmallGDerivative(x, rN.length());
+		float fD = computeSmallFDerivative(x, rN.length());
+		float gD = computeSmallGDerivative(x, rN.length());
 		// check for accuracy of f, g, fD, gD
-		//float test = f * gD - fD * g;
+		float test = f * gD - fD * g;
 		//cout << "4.4-20 Check, should be near 1: " << test << endl;
 		// Now compute v from 4.4-19
-		//Vector vN = computeVVec(fD, gD);
+		v = computeVVec(fD, gD);
 		//cout << "Vector v:   ";
-		//vN.print();
+		//v.print();
+		if (r.length() > 0.001f) {
+			this->ephemeris.trueAnomaly = calcHeronKahanFormula(rN, r) + ephemeris.trueAnomaly;
+		}
 		r = rN;
 		//v = vN;
+		Vector h = r.cross(v);
+		//cout << "hLength: " << h.length() << endl;
+		//cout << "Z: " << computeZ(x) << endl;
+		float zComp = computeZ(x);
+		float aComp = powf(x, 2.0f) / zComp;
+		float rA = ephemeris.semiMajorA;
+		if (aComp != rA) {
+			//cout << aComp << endl;
+		}
+
 	}
 	catch (const std::exception& e)
 	{
@@ -135,6 +152,7 @@ float Satellite::computeCseries(float z, unsigned int maxSteps)
 		cz = (1.0f - coshf(std::sqrtf(-z))) / z;
 	}
 	else {
+		cout << "C Series needed" << endl;
 		for (unsigned int k = 0; k < maxSteps; k++) {
 			float res = (powf((-z), (float)k) / factorial(2 * k + 2));
 			if (isnan(res)) {
@@ -159,6 +177,7 @@ float Satellite::computeSseries(float z, unsigned int maxSteps)
 		sz = (sinhf(sqZ) - sqZ) / std::sqrtf(powf((-z), 3.0f));
 	}
 	else {
+		cout << "S Series needed" << endl;
 		for (unsigned int k = 0; k < maxSteps; k++) {
 			float res = (powf((-z), (float)k) / factorial(2 * k + 3));
 			if (isnan(res)) {
@@ -207,7 +226,7 @@ float Satellite::xnNewtonIteration(float xn, float t, float tn, float zn)
 		xNext = xNext + ((t - timeN) / dtdx);
 		zNext = computeZ(xNext);
 		timeN = computeTnByXn(xNext, zNext);
-		if ((t - timeN) < 0.0001f) {
+		if ((t - timeN) < 0.00001f) {
 			break;
 		}
 	}
@@ -226,14 +245,14 @@ float Satellite::computeNewDtDxWithMU(float xn)
 	Vector r0 = this->ephemeris.getR0();
 	Vector v0 = this->ephemeris.getV0();
 	float zn = computeZ(xn);
-	float bigC = computeCseries(zn, 100);
-	float bigS = computeSseries(zn, 100);
+	float bigC = computeCseries(zn, 400);
+	float bigS = computeSseries(zn, 400);
 
 	float term1 = powf(xn, 2.0f) * bigC;
 	float term2 = (r0.dot(v0) / sqMU) * xn * (1.0f - zn * bigS);
 	float term3 = r0.length() * (1.0f - zn * bigC);
 
-	return term1 + term2 + term3;;
+	return (term1 + term2 + term3);
 }
 
 //4.4-18
@@ -261,17 +280,35 @@ float Satellite::computeSmallF(float x)
 {
 	float z = computeZ(x);
 	float bigC = computeCseries(z, 100);
-	float a = this->ephemeris.semiMajorA;
 	float r0Length = this->ephemeris.getR0().length();
-	return 1.0f - (powf(x, 2.0f) / r0Length) * bigC;
+	float a = ephemeris.semiMajorA;
+	float res = (1.0f - (powf(x, 2.0f) / r0Length) * bigC);
+	float res2 = 1.0f - (a / r0Length) * (1.0f - cosf( (x)/(std::sqrtf(a))));
+	float e = ephemeris.eccentricity;
+	float res3 = (a / r0Length) * (((r0Length / a) - 1.0f) + cos(x / std::sqrt(a)));
+	if (fabsf(res - res3) > 0.00001f) {
+		cout << "Small F differences: " << res - res3 << endl;
+	}
+
+	return res;
 }
 
 //4.4-34
 float Satellite::computeSmallG(float x, float t)
 {
+	Vector r0 = this->ephemeris.getR0();
+	Vector v0 = this->ephemeris.getV0();
 	float z = computeZ(x);
 	float bigS = computeSseries(z, 100);
-	return t - (powf(x, 3.0f) / sqMU) * bigS;
+	float bigC = computeCseries(z, 100);
+	float res = (sqMU*t-powf(x,3.0f)*bigS)/sqMU;
+	//float res = (t - (powf(x, 3.0f) * bigS / sqMU));
+
+	float res2 = ( powf(x,2.0f) * (r0.dot(v0) / sqMU) * bigC + r0.length()*x*(1.0f-z*bigS) ) / sqMU;
+	if (fabsf(res - res2) > 0.00001f) {
+		//cout << "Small G differences: " << res - res2 << endl;
+	}
+	return res2;
 }
 
 //4.4-35
@@ -304,7 +341,7 @@ void Satellite::update(float deltaT)
 	try
 	{
 		totalTime += (double)(deltaT*speedUp);
-		testKeplerProblem(totalTime);
+		calcKeplerProblem(totalTime);
 		//calcOrbitPos(deltaT);
 		Matrix f = Matrix();
 		f.translation(r);
@@ -409,7 +446,7 @@ double Satellite::calcHeronKahanFormula(double a, double b, double c)
 		return 2.0*atan(std::sqrt((term1) / (term2)));;
 	}
 	else {
-		std::cerr << "Invalid TriangleB. a: " << a << "; b: " << b << endl;
+		//std::cerr << "Invalid TriangleB. a: " << a << "; b: " << b << endl;
 		return 0.00001;	// Emergency replacement, basically.
 	}
 }
@@ -424,15 +461,22 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	this->ephemeris.trueAnomaly = 0.0f;
 
 	int runner = 0;
-	bool calc = true;
 	float stepper = 0.005f;
-	
-	while (runner < 900000 && calc) {
-		if (this->ephemeris.trueAnomaly > 2.0*M_PI+0.0001) {
+	stepper = 100;
+	while (runner < 10000) {
+		
+		if (runner%10 == 0) {
+			//cout << ephemeris.trueAnomaly << endl;
+		}
+		//this->calcOrbitPos(stepper,true);
+		this->totalTime += stepper;
+		this->calcKeplerProblem(this->totalTime);
+		if (this->ephemeris.trueAnomaly >= 2.0*M_PI-0.01f) {
 			//Stop point generation after one orbit
+			cout << "One Orbit fullfilled: " <<ephemeris.trueAnomaly <<endl;
+			
 			break;
 		}
-		this->calcOrbitPos(stepper,true);
 		if (r.lengthSquared() > 0.000001f) {
 			//Only add the point if it's not the origin
 			resVec.push_back(r);
@@ -440,10 +484,51 @@ std::vector<Vector> Satellite::calcOrbitVis()
 		runner++;
 	}
 	this->ephemeris.trueAnomaly = startAngle;
-
+	this->totalTime = 0.0;
 
 	//Just for testing:
 	//cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getCircularOrbitalPeriod() << endl;
+	cout << "Points for vis: " << resVec.size() << endl;
+	return (resVec);
+}
 
+
+//Method for going through the orbit and calculating a collection of points along the orbit
+// This can be used to represent the trajectory with lines (used for OrbitLineModel).
+std::vector<Vector> Satellite::calcOrbitVis2()
+{
+	std::vector<Vector> resVec;
+
+	double startAngle = this->ephemeris.trueAnomaly;
+	this->ephemeris.trueAnomaly = 0.0f;
+
+	int runner = 0;
+	float stepper = 0.005f;
+	//stepper = 100;
+	while (runner < 10000) {
+
+		if (runner % 10 == 0) {
+			//cout << ephemeris.trueAnomaly << endl;
+		}
+		this->calcOrbitPos(stepper,true);
+		//this->totalTime += stepper;
+		//this->calcKeplerProblem(this->totalTime);
+		if (this->ephemeris.trueAnomaly >= 2.0*M_PI) {
+			//Stop point generation after one orbit
+			cout << "One Orbit fullfilled" << endl;
+			break;
+		}
+		if (r.lengthSquared() > 0.000001f) {
+			//Only add the point if it's not the origin
+			resVec.push_back(r);
+		}
+		runner++;
+	}
+	this->ephemeris.trueAnomaly = startAngle;
+	this->totalTime = 0.0;
+
+	//Just for testing:
+	//cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getCircularOrbitalPeriod() << endl;
+	cout << "Points for vis: " << resVec.size() << endl;
 	return (resVec);
 }

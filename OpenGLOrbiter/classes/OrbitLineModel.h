@@ -11,14 +11,15 @@ class OrbitLineModel : public StandardModel
 {
 public:
 	OrbitLineModel(std::vector<Vector> points, bool fullLine = true);
+	OrbitLineModel(std::vector<Vector> points, Color c, bool fullLine = true);
 	OrbitLineModel(std::vector<Vector> points, Matrix transform, bool fullLine = true);
 	virtual ~OrbitLineModel() {}
 	virtual void draw(const BaseCamera& Cam);
-	void evaluatePoints(bool fullLine);
+	
 	std::vector<Vector> points;
 protected:
 	VertexBuffer VB;
-
+	void evaluatePoints(bool fullLine,Color c = Color(0,1,0));
 };
 
 #endif /* OrbitLineModel_hpp */

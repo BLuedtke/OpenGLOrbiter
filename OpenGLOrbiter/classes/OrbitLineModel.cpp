@@ -11,6 +11,15 @@ OrbitLineModel::OrbitLineModel(std::vector<Vector> points, bool fullLine)
 	transform(standard);
 }
 
+OrbitLineModel::OrbitLineModel(std::vector<Vector> points, Color c, bool fullLine)
+{
+	this->points = points;
+	this->evaluatePoints(fullLine,c);
+	Matrix standard = Matrix();
+	standard.translation(0.0f, 0.0f, 0.0f);
+	transform(standard);
+}
+
 OrbitLineModel::OrbitLineModel(std::vector<Vector> points, Matrix transform, bool fullLine)
 {
 	this->points = points;
@@ -29,12 +38,12 @@ void OrbitLineModel::draw(const BaseCamera & Cam)
 	VB.deactivate();
 }
 
-void OrbitLineModel::evaluatePoints(bool fullLine)
+void OrbitLineModel::evaluatePoints(bool fullLine, Color c)
 {
 	try
 	{
 		VB.begin();
-		VB.addColor(Color(0.0f, 1.0f, 0.0f));
+		VB.addColor(c);
 
 		if (points.size() > 0) {
 			for (unsigned int i = 1; i < points.size(); i++) {
@@ -46,9 +55,9 @@ void OrbitLineModel::evaluatePoints(bool fullLine)
 				VB.addVertex(p1.X, p1.Y, p1.Z);
 			}
 			Vector p1 = points[points.size()-1];
-			VB.addVertex(p1.X, p1.Y, p1.Z);
+			//VB.addVertex(p1.X, p1.Y, p1.Z);
 			p1 = points[0];
-			VB.addVertex(p1.X, p1.Y, p1.Z);
+			//VB.addVertex(p1.X, p1.Y, p1.Z);
 		}
 		else {
 			std::cout << "NO POINTS TO DRAW THE ORBIT" << std::endl;

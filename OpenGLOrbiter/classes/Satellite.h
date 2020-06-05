@@ -14,10 +14,11 @@ public:
 	Satellite();
 	~Satellite();
 	std::vector<Vector> calcOrbitVis();
+	std::vector<Vector> calcOrbitVis2();
 	void update(float dtime);
 	OrbitEphemeris ephemeris;
 	float speedUp = 1.0f;
-	void testKeplerProblem(float timePassed);
+	void calcKeplerProblem(float timePassed);
 
 private:
 	Vector v;

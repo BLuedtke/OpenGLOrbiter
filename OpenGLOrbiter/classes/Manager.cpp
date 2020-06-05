@@ -97,14 +97,18 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	
 	
 	// Random Satellite
-	//addSatellite(9796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.1f);
-	//addSatellite(42164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.8f);
+	//addSatellite(9796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.2f);
+	//addSatellite(32164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.8f);
+	//addSatellite(18164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.6f);
+	//addSatellite(18164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.4f);
+	//addSatellite(18164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.2f);
+	//addSatellite(18164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.0f);
 
 	/**/
 	addEquatorLinePlane();
 
 	//THIS SPEEDS UP EVERYTHING BY THE FACTOR
-	speedUpSats(1.0f);
+	speedUpSats(205.0f);
 	//-> Using this to slow things down might cause numerical instability!
 }
 
@@ -134,6 +138,13 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 		unique_ptr<StandardModel> uModel = std::make_unique<OrbitLineModel>(resOrbit,fullLine);
 		uModel->setShader(std::move(uCShader));
 		uModels.push_back(std::move(uModel));
+		/*
+		resOrbit = sat->calcOrbitVis2();
+		uCShader = std::make_unique<FlatColorShader>(Color(1, 0, 0));
+		uModel = std::make_unique<OrbitLineModel>(resOrbit, Color(1, 0, 0), fullLine);
+		uModel->setShader(std::move(uCShader));
+		uModels.push_back(std::move(uModel));
+		/**/
 	}
 	/*
 	//Testing only!

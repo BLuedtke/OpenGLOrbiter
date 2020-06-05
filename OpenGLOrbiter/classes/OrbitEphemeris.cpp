@@ -29,8 +29,8 @@ OrbitEphemeris::OrbitEphemeris(float semiA, float ecc, float incli,
 
 float OrbitEphemeris::getOrCreateSemiMinorP()
 {
-	if (this->semiMinorP != 0.0f || (this->semiMinorP > 0.0f - 0.00001f && this->semiMinorP < 0.0f + 0.000001f)) {
-		this->semiMinorP = semiMajorA*(1.0f - eccentricity * eccentricity);
+	if (this->semiMinorP == 0.0f || (this->semiMinorP > 0.0f - 0.00001f && this->semiMinorP < 0.0f + 0.000001f)) {
+		this->semiMinorP = semiMajorA*(1.0f - pow(eccentricity,2.0));
 	}
 	return semiMinorP;
 }
@@ -44,15 +44,24 @@ void OrbitEphemeris::calcR0V0()
 {
 	try
 	{
-		float semiMinorP = this->getOrCreateSemiMinorP();
-		float rScal = semiMinorP / (1 + eccentricity * cosf(0.0f));
 
+		float semiMinorP = this->getOrCreateSemiMinorP();
+		if (eccentricity >= 1.0f) {
+			//semiMinorP
+		}
+		float rScal = semiMinorP / (1 + eccentricity * 1.0f);
+		float h = std::sqrt(mu*semiMinorP);
+		std::cout << "1.7-9 h: " << h << std::endl;
 		Matrix pqw = this->getOrCreatePQW();
 		Vector P = pqw.right();
 		Vector Q = pqw.backward();
-		r0 = P * rScal * cosf(0.0f) + Q * rScal * sinf(0.0f);
-		Vector temp = P * -1.0f * sinf(0.0f) + Q * (this->eccentricity + cosf(0.0f));
+		r0 = P * rScal * 1.0f + Q * rScal * 0.0f;
+		Vector temp = P * -1.0f * 0.0f + Q * (this->eccentricity + 1.0f);
 		v0 = temp * (float)std::sqrt(mu / semiMinorP);
+		Vector h0 = r0.cross(v0);
+		std::cout << "r0xV0 h: " << h0.length() << std::endl;
+		float a = (-mu) / (powf(v0.length(), 2.0f) - 2 * mu / r0.length());
+		std::cout << "Given a: " << semiMajorA << "; r0v0 a: " << a << std::endl;
 		doR0V0exist = true;
 	}
 	catch (const std::exception& e)
