@@ -18,6 +18,9 @@ public:
 	float getOrCreateSemiMinorP();
 
 	float getCircularOrbitalPeriod();
+	void calcR0V0();
+	Vector r0;
+	Vector v0;
 
 	Matrix pqw;
 	bool pqwExists = false;

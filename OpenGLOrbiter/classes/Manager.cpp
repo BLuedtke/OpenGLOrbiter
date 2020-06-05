@@ -47,8 +47,9 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
 	addEarth();
 	//Sample with all parameters. This height corresponds to GEO.
-	addSatellite(42164.0f * sizeF, 0.0f, 0.0f, 0.0f, 0.2f, 0.0, true, true);
+	//addSatellite(42164.0f * sizeF, 0.0f, 0.0f, 0.0f, 0.2f, 0.0, true, true);
 
+	/*
 	// THIS IS THE GPS 'CONSTELLATION'
 	addSatellite(26550.0f * sizeF, 302.8080f, 56.01f, 279.2863f, 0.0186085f, 0);
 	addSatellite(26550.0f * sizeF, 302.6010f, 56.06f, 35.3566f, 0.0113652f, 0);
@@ -81,12 +82,14 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	addSatellite(26550.0f * sizeF, 357.4799f, 56.04f, 30.9207f, 0.0081731f, 0);
 	addSatellite(26550.0f * sizeF, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
 	/**/
-	addSatellite(26550.0f * sizeF, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
+	//addSatellite(26550.0f * sizeF, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
 
 
 	// THIS IS A ISS-LIKE SATELLITE
-
-	addSatellite(6796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.0f);
+	//addSatellite(6796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.0f);
+	
+	// Random Satellite
+	addSatellite(9796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.1f);
 
 	/**/
 	addEquatorLinePlane();
@@ -122,6 +125,8 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 		uModel->setShader(std::move(uCShader));
 		uModels.push_back(std::move(uModel));
 	}
+	//Testing only!
+	sat->testKeplerProblem(200.f);
 	this->satellites.push_back(std::move(sat));
 }
 

@@ -17,6 +17,7 @@ public:
 	void update(float dtime);
 	OrbitEphemeris ephemeris;
 	float speedUp = 1.0f;
+	void testKeplerProblem(float timePassed);
 
 private:
 	Vector v;
@@ -26,6 +27,24 @@ private:
 	double calcHeronKahanFormula(Vector k, Vector i);
 	double calcAngleProgression(float deltaT);
 
+	float computeXfirstGuess(float t);
+	float computeZ(float x);
+
+	float xnNewtonIteration(float xn, float t, float tn, float xf);
+	float computeNewDtDx(float xn);
+	float computeNewDtDxWithMU(float xn);
+	float computeTnByXn(float x, float z);
+	
+	float computeSmallF(float x);
+	float computeSmallG(float x, float t);
+	float computeSmallFDerivative(float x, float rLength);
+	float computeSmallGDerivative(float x, float rLength);
+
+	Vector computeRVec(float f, float g);
+	Vector computeVVec(float fD, float gD);
+	
+	float computeCseries(float z, unsigned int maxSteps);
+	float computeSseries(float z, unsigned int maxSteps);
 };
 
 #endif /* Satellite_hpp */

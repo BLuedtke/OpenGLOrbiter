@@ -40,6 +40,20 @@ float OrbitEphemeris::getCircularOrbitalPeriod()
 	return 2.0f * (float)M_PI * std::sqrtf(std::powf(semiMajorA, 3.0f) / (float)mu);
 }
 
+void OrbitEphemeris::calcR0V0()
+{
+	float semiMinorP = this->getOrCreateSemiMinorP();
+	float rScal = semiMinorP / (1 + eccentricity * cosf(0.0f));
+
+	Matrix pqw = this->getOrCreatePQW();
+	Vector P = pqw.right();
+	Vector Q = pqw.backward();
+	r0 = P * rScal * cosf(0.0f) + Q * rScal * sinf(0.0f);
+	Vector temp = P * -1.0f * sinf(0.0f) + Q * (this->eccentricity + cosf(0.0f));
+	v0 = temp * (float)std::sqrt(mu / semiMinorP);
+}
+
+
 void OrbitEphemeris::calcPQWMatrix()
 {
 	Matrix a = Matrix().rotationY(longitudeAsc);
