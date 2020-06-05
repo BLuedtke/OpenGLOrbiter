@@ -55,8 +55,8 @@ void OrbitLineModel::evaluatePoints(bool fullLine)
 		}
 		VB.end();
 	}
-	catch (const std::exception&)
+	catch (const std::exception& e)
 	{
-		std::cerr << "MIST" << std::endl;
+		std::cerr << e.what() << std::endl;
 	}
 }
