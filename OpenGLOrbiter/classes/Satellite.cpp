@@ -303,10 +303,11 @@ float Satellite::computeSmallG(float x, float t)
 	float bigC = computeCseries(z, 100);
 	float res = (sqMU*t-powf(x,3.0f)*bigS)/sqMU;
 	//float res = (t - (powf(x, 3.0f) * bigS / sqMU));
-
+	//res does not return the correct results as long as the results are positive. Once it's negative, it fits.
 	float res2 = ( powf(x,2.0f) * (r0.dot(v0) / sqMU) * bigC + r0.length()*x*(1.0f-z*bigS) ) / sqMU;
 	if (fabsf(res - res2) > 0.00001f) {
 		//cout << "Small G differences: " << res - res2 << endl;
+		//cout << "good g: " << res2 << "; bad g: " << res << endl;
 	}
 	return res2;
 }
@@ -464,19 +465,13 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	float stepper = 0.005f;
 	stepper = 100;
 	while (runner < 10000) {
-		
-		if (runner%10 == 0) {
-			//cout << ephemeris.trueAnomaly << endl;
+		if (this->ephemeris.trueAnomaly >= 2.0*M_PI - 0.01f) {
+			//Stop point generation after one orbit
+			cout << "One Orbit fullfilled: " << ephemeris.trueAnomaly << endl;
+			break;
 		}
-		//this->calcOrbitPos(stepper,true);
 		this->totalTime += stepper;
 		this->calcKeplerProblem(this->totalTime);
-		if (this->ephemeris.trueAnomaly >= 2.0*M_PI-0.01f) {
-			//Stop point generation after one orbit
-			cout << "One Orbit fullfilled: " <<ephemeris.trueAnomaly <<endl;
-			
-			break;
-		}
 		if (r.lengthSquared() > 0.000001f) {
 			//Only add the point if it's not the origin
 			resVec.push_back(r);
@@ -492,43 +487,3 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	return (resVec);
 }
 
-
-//Method for going through the orbit and calculating a collection of points along the orbit
-// This can be used to represent the trajectory with lines (used for OrbitLineModel).
-std::vector<Vector> Satellite::calcOrbitVis2()
-{
-	std::vector<Vector> resVec;
-
-	double startAngle = this->ephemeris.trueAnomaly;
-	this->ephemeris.trueAnomaly = 0.0f;
-
-	int runner = 0;
-	float stepper = 0.005f;
-	//stepper = 100;
-	while (runner < 10000) {
-
-		if (runner % 10 == 0) {
-			//cout << ephemeris.trueAnomaly << endl;
-		}
-		this->calcOrbitPos(stepper,true);
-		//this->totalTime += stepper;
-		//this->calcKeplerProblem(this->totalTime);
-		if (this->ephemeris.trueAnomaly >= 2.0*M_PI) {
-			//Stop point generation after one orbit
-			cout << "One Orbit fullfilled" << endl;
-			break;
-		}
-		if (r.lengthSquared() > 0.000001f) {
-			//Only add the point if it's not the origin
-			resVec.push_back(r);
-		}
-		runner++;
-	}
-	this->ephemeris.trueAnomaly = startAngle;
-	this->totalTime = 0.0;
-
-	//Just for testing:
-	//cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getCircularOrbitalPeriod() << endl;
-	cout << "Points for vis: " << resVec.size() << endl;
-	return (resVec);
-}
