@@ -16,6 +16,8 @@ The Project is loosely based on original work by Prof. Dr.-Ing. Philipp Lensing.
 
 Anyone is free to download this project and modify it. There is no guaranteed maintenance or support. If you use code from the project, please give a link to the repository.
 
+To understand the aspect of orbital mechanics, I mainly studied this book: http://cmp.felk.cvut.cz/~kukelova/pajdla/Bate,%20Mueller,%20and%20White%20-%20Fundamentals%20of%20Astrodynamics.pdf 
+
 ## Where is the code?
 "OpenGLOrbiter/classes"
 
