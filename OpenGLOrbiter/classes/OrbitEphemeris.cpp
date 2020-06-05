@@ -90,18 +90,20 @@ Vector OrbitEphemeris::getV0()
 
 void OrbitEphemeris::calcPQWMatrix()
 {
-	Matrix a = Matrix().rotationY(longitudeAsc);
-	Matrix b = Matrix().rotationX(inclination);
-	pqw = Matrix();
-	//pqw = pqw * b * a;
-	//Vector t = pqw.right().cross(pqw.forward());
-	//Vector axis = pqw.forward().normalize();
-	//axis.print();
-	Vector axis = Vector(0, 1, 0);
-	//Matrix c = Matrix();
-	Matrix c = Matrix().rotationAxis(axis, argPeriaps);
-	pqw = pqw * a * b * c;
-	pqwExists = true;
+	try
+	{
+		Matrix a = Matrix().rotationY(longitudeAsc);
+		Matrix b = Matrix().rotationX(inclination);
+		Vector axis = Vector(0, 1, 0);
+		Matrix c = Matrix().rotationAxis(axis, argPeriaps);
+		pqw = Matrix();
+		pqw = pqw * a * b * c;
+		pqwExists = true;
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
 }
 
 Matrix OrbitEphemeris::getOrCreatePQW()

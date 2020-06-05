@@ -56,7 +56,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
 	addEarth();
 	//Sample with all parameters. This height corresponds to GEO.
-	//addSatellite(42164.0f * sizeF, 0.0f, 0.0f, 0.0f, 0.2f, 0.0, true, true);
+	//addSatellite(42164.0f * sizeF, 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
 	
 	/**/
 	// THIS IS THE GPS 'CONSTELLATION'
@@ -94,11 +94,11 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	//addSatellite(26550.0f * sizeF, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
 
 
-	// THIS IS A ISS-LIKE SATELLITE
-	//addSatellite(6796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.0f);
+	
 	
 	// Random Satellite
 	//addSatellite(9796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.1f);
+	//addSatellite(42164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.8f);
 
 	/**/
 	addEquatorLinePlane();

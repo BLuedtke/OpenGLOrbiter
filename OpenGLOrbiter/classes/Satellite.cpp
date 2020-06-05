@@ -12,6 +12,7 @@
 // In reality, there are more factors influencing this, and it does not scale down the same as the size.
 // If you want to change it, change it in the OrbitalEphemeris.cpp as well.
 #define mu 0.0000015399
+#define sqMU (float)std::sqrt(mu)
 
 using std::cout;
 using std::endl;
@@ -180,12 +181,12 @@ float Satellite::computeTnByXn(float xn, float zn)
 
 	float sMuTn = 0.0f;
 
-	float term1 = (r0.dot(v0) / (float)std::sqrt(mu)) * powf(xn, 2.0f) * bigC;
+	float term1 = (r0.dot(v0) / sqMU) * powf(xn, 2.0f) * bigC;
 	float term2 = (1.0f - (r0.length() / this->ephemeris.semiMajorA)) * powf(xn, 3.0f) * bigS;
 	float term3 = r0.length() * xn;
 
 	sMuTn = term1 + term2 + term3;
-	float tn = (float)(sMuTn / std::sqrt(mu));
+	float tn = (sMuTn / sqMU);
 	//cout << "tn: " << tn << endl;
 	return tn;
 }
@@ -216,7 +217,7 @@ float Satellite::xnNewtonIteration(float xn, float t, float tn, float zn)
 //4.4-17 with MU removed
 float Satellite::computeNewDtDx(float xn)
 {
-	return (float)(computeNewDtDxWithMU(xn) / std::sqrt(mu));
+	return (float)(computeNewDtDxWithMU(xn) / sqMU);
 }
 
 //4.4-17 basically = rLength (later)
@@ -229,7 +230,7 @@ float Satellite::computeNewDtDxWithMU(float xn)
 	float bigS = computeSseries(zn, 100);
 
 	float term1 = powf(xn, 2.0f) * bigC;
-	float term2 = (r0.dot(v0) / (float)std::sqrt(mu)) * xn * (1.0f - zn * bigS);
+	float term2 = (r0.dot(v0) / sqMU) * xn * (1.0f - zn * bigS);
 	float term3 = r0.length() * (1.0f - zn * bigC);
 
 	return term1 + term2 + term3;;
@@ -261,8 +262,8 @@ float Satellite::computeSmallF(float x)
 	float z = computeZ(x);
 	float bigC = computeCseries(z, 100);
 	float a = this->ephemeris.semiMajorA;
-	Vector r0 = this->ephemeris.getR0();
-	return 1.0f - (powf(x, 2.0f) / r0.length()) * bigC;
+	float r0Length = this->ephemeris.getR0().length();
+	return 1.0f - (powf(x, 2.0f) / r0Length) * bigC;
 }
 
 //4.4-34
@@ -270,7 +271,7 @@ float Satellite::computeSmallG(float x, float t)
 {
 	float z = computeZ(x);
 	float bigS = computeSseries(z, 100);
-	return t - (powf(x, 3.0f) / std::sqrt(mu)) * bigS;
+	return t - (powf(x, 3.0f) / sqMU) * bigS;
 }
 
 //4.4-35
@@ -287,13 +288,13 @@ float Satellite::computeSmallFDerivative(float x, float rLength)
 	float z = computeZ(x);
 	float bigS = computeSseries(z, 100);
 	float r0Length = this->ephemeris.getR0().length();
-	return ((float)std::sqrt(mu) / (r0Length*rLength)) * x * (z * bigS - 1.0f);
+	return (sqMU / (r0Length*rLength)) * x * (z * bigS - 1.0f);
 }
 
 //4.5-10
 float Satellite::computeXfirstGuess(float t)
 {
-	return ((float)std::sqrt(mu) * t) / this->ephemeris.semiMajorA;
+	return (sqMU * t) / this->ephemeris.semiMajorA;
 }
 
 
@@ -302,7 +303,7 @@ void Satellite::update(float deltaT)
 {
 	try
 	{
-		totalTime += (double)deltaT;
+		totalTime += (double)(deltaT*speedUp);
 		testKeplerProblem(totalTime);
 		//calcOrbitPos(deltaT);
 		Matrix f = Matrix();
