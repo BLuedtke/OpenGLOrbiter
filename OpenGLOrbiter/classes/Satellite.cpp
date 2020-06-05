@@ -16,6 +16,13 @@
 using std::cout;
 using std::endl;
 
+
+int factorial(int n)
+{
+	return (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
+}
+
+
 Satellite::Satellite(float Radius, int Stacks, int Slices) : TriangleSphereModel(Radius,Stacks,Slices)
 {
 	Matrix standard = Matrix();
@@ -70,170 +77,36 @@ void Satellite::testKeplerProblem(float timePassed)
 {
 	try
 	{
-		//Important call before any other calculation methods are used.
-		this->ephemeris.calcR0V0(); // This assumes starting at perigee (?)
-
 		//Now try to calculate first x guess.
 		float xn = computeXfirstGuess(timePassed);
-		cout << "First guess for x = " << xn << endl;
+		//cout << "First guess for x = " << xn << endl;
 		float zn = computeZ(xn);
 		float tn = computeTnByXn(xn, zn);
 		float x = xnNewtonIteration(xn, timePassed, tn, zn);
-		cout << "Determined x: " << x << endl;
+		//cout << "Determined x: " << x << endl;
 		//Evaluate f and g from equations (4.4-31) and (4.4-34);then compute r and r.length from equation (4.4-18)
 		float f = computeSmallF(x);
 		float g = computeSmallG(x, timePassed);
-		cout << "f: " << f << "; g: " << g << endl;
+		//cout << "f: " << f << "; g: " << g << endl;
 		//Now compute r by 4.4-18 (r.length() = rLength)
 		Vector rN = computeRVec(f, g);
 		//Evaluate fD and gD from equations 4.4-35 and 4.4-36
-		float fD = computeSmallFDerivative(x, rN.length());
-		float gD = computeSmallGDerivative(x, rN.length());
+		//float fD = computeSmallFDerivative(x, rN.length());
+		//float gD = computeSmallGDerivative(x, rN.length());
 		// check for accuracy of f, g, fD, gD
-		float test = f * gD - fD * g;
-		cout << "4.4-20 Check, should be near 1: " << test << endl;
+		//float test = f * gD - fD * g;
+		//cout << "4.4-20 Check, should be near 1: " << test << endl;
 		// Now compute v from 4.4-19
-		Vector vN = computeVVec(fD, gD);
-		cout << "Vector v:   ";
-		vN.print();
+		//Vector vN = computeVVec(fD, gD);
+		//cout << "Vector v:   ";
+		//vN.print();
+		r = rN;
+		//v = vN;
 	}
 	catch (const std::exception& e)
 	{
 		cout << e.what() << endl;
 	}
-}
-
-//4.4-15 Newton iteration
-float Satellite::xnNewtonIteration(float xn, float t, float tn, float zn)
-{
-	//Testing. Will be a loop with a break criteria when finished.
-	float xNext = xn;
-	float timeN = tn;
-	float zNext = zn;
-
-	//We may also need to check if anything becomes NAN during the iteration
-	for (unsigned int i = 0; i < 200; i++) {
-		//cout << "xNext: " << xNext << endl;
-		//cout << "t - timeN = " << (t - timeN) << endl;
-		float dtdx = computeNewDtDx(xNext);
-		xNext = xNext + ((t - timeN) / dtdx);
-		zNext = computeZ(xNext);
-		timeN = computeTnByXn(xNext, zNext);
-		if ((t - timeN) < 0.00001f) {
-			break;
-		}
-	}
-	return xNext;
-}
-
-//4.4-17 with MU removed
-float Satellite::computeNewDtDx(float xn)
-{
-	return (float)(computeNewDtDxWithMU(xn) / std::sqrt(mu));
-}
-
-// 4.4-17 basically = rLength (later)
-float Satellite::computeNewDtDxWithMU(float xn)
-{
-	Vector r0 = this->ephemeris.r0;
-	Vector v0 = this->ephemeris.v0;
-	float zn = computeZ(xn);
-	float bigC = computeCseries(zn, 400);
-	float bigS = computeSseries(zn, 400);
-
-	float term1 = powf(xn, 2.0f) * bigC;
-	float term2 = (r0.dot(v0) / (float)std::sqrt(mu)) * xn * (1.0f - zn * bigS);
-	float term3 = r0.length() * (1.0f - zn * bigC);
-
-	return term1 + term2 + term3;;
-}
-
-//4.5-10
-float Satellite::computeXfirstGuess(float t)
-{
-	return (std::sqrtf((float)mu) * t) / this->ephemeris.semiMajorA;
-}
-
-//4.4-14
-float Satellite::computeTnByXn(float xn, float zn)
-{
-	// To be used with a trial Value for x
-	float bigC = computeCseries(zn, 400);
-	float bigS = computeSseries(zn, 400);
-	Vector r0 = this->ephemeris.r0;
-	Vector v0 = this->ephemeris.v0;
-
-	float sMuTn = 0.0f;
-	
-	float term1 = (r0.dot(v0) / (float)std::sqrt(mu)) * powf(xn,2.0f) * bigC;
-	float term2 = (1.0f - (r0.length() / this->ephemeris.semiMajorA)) * powf(xn, 3.0f) * bigS;
-	float term3 = r0.length() * xn;
-	
-	sMuTn = term1 + term2 + term3;
-	float tn = (float) (sMuTn / std::sqrt(mu));
-	cout << "tn: " << tn << endl;
-	return tn;
-}
-
-//4.4-31
-float Satellite::computeSmallF(float x)
-{
-	float z = computeZ(x);
-	float bigC = computeCseries(z, 400);
-	float a = this->ephemeris.semiMajorA;
-	Vector r0 = this->ephemeris.r0;
-	return 1.0f - (powf(x, 2.0f) / r0.length()) * bigC;
-}
-
-//4.4-34
-float Satellite::computeSmallG(float x, float t)
-{
-	float z = computeZ(x);
-	float bigS = computeSseries(z, 400);
-	return t - (powf(x, 3.0f) / std::sqrt(mu)) * bigS;
-}
-
-//4.4-35
-float Satellite::computeSmallGDerivative(float x, float rLength)
-{
-	float z = computeZ(x);
-	float bigC = computeCseries(z, 400);
-	return 1.0f - (powf(x, 2.0f) / rLength) * bigC;
-}
-
-//4.4-36
-float Satellite::computeSmallFDerivative(float x, float rLength)
-{
-	float z = computeZ(x);
-	float bigS = computeSseries(z, 400);
-	float r0Length = this->ephemeris.r0.length();
-	return ((float)std::sqrt(mu) / (r0Length*rLength)) * x * (z * bigS - 1.0f);
-}
-
-//4.4-18
-Vector Satellite::computeRVec(float f, float g)
-{
-	Vector r0 = this->ephemeris.r0;
-	Vector v0 = this->ephemeris.v0;
-	Vector rN = (r0*f + v0 * g);
-	cout << "rN: ";
-	rN.print();
-	cout << "rN Length: " << rN.length() << endl;
-	return rN;
-}
-
-//4.4-19
-Vector Satellite::computeVVec(float fD, float gD)
-{
-	Vector r0 = this->ephemeris.r0;
-	Vector v0 = this->ephemeris.v0;
-	return r0 * fD + v0 * gD;
-}
-
-
-int factorial(int n)
-{
-	return (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
 }
 
 //4.4-7
@@ -296,13 +169,142 @@ float Satellite::computeSseries(float z, unsigned int maxSteps)
 	return sz;
 }
 
+//4.4-14
+float Satellite::computeTnByXn(float xn, float zn)
+{
+	// To be used with a trial Value for x
+	float bigC = computeCseries(zn, 100);
+	float bigS = computeSseries(zn, 100);
+	Vector r0 = this->ephemeris.getR0();
+	Vector v0 = this->ephemeris.getV0();
+
+	float sMuTn = 0.0f;
+
+	float term1 = (r0.dot(v0) / (float)std::sqrt(mu)) * powf(xn, 2.0f) * bigC;
+	float term2 = (1.0f - (r0.length() / this->ephemeris.semiMajorA)) * powf(xn, 3.0f) * bigS;
+	float term3 = r0.length() * xn;
+
+	sMuTn = term1 + term2 + term3;
+	float tn = (float)(sMuTn / std::sqrt(mu));
+	//cout << "tn: " << tn << endl;
+	return tn;
+}
+
+//4.4-15 Newton iteration
+float Satellite::xnNewtonIteration(float xn, float t, float tn, float zn)
+{
+	//Testing. Will be a loop with a break criteria when finished.
+	float xNext = xn;
+	float timeN = tn;
+	float zNext = zn;
+
+	//We may also need to check if anything becomes NAN during the iteration
+	for (unsigned int i = 0; i < 200; i++) {
+		//cout << "xNext: " << xNext << endl;
+		//cout << "t - timeN = " << (t - timeN) << endl;
+		float dtdx = computeNewDtDx(xNext);
+		xNext = xNext + ((t - timeN) / dtdx);
+		zNext = computeZ(xNext);
+		timeN = computeTnByXn(xNext, zNext);
+		if ((t - timeN) < 0.0001f) {
+			break;
+		}
+	}
+	return xNext;
+}
+
+//4.4-17 with MU removed
+float Satellite::computeNewDtDx(float xn)
+{
+	return (float)(computeNewDtDxWithMU(xn) / std::sqrt(mu));
+}
+
+//4.4-17 basically = rLength (later)
+float Satellite::computeNewDtDxWithMU(float xn)
+{
+	Vector r0 = this->ephemeris.getR0();
+	Vector v0 = this->ephemeris.getV0();
+	float zn = computeZ(xn);
+	float bigC = computeCseries(zn, 100);
+	float bigS = computeSseries(zn, 100);
+
+	float term1 = powf(xn, 2.0f) * bigC;
+	float term2 = (r0.dot(v0) / (float)std::sqrt(mu)) * xn * (1.0f - zn * bigS);
+	float term3 = r0.length() * (1.0f - zn * bigC);
+
+	return term1 + term2 + term3;;
+}
+
+//4.4-18
+Vector Satellite::computeRVec(float f, float g)
+{
+	Vector r0 = this->ephemeris.getR0();
+	Vector v0 = this->ephemeris.getV0();
+	Vector rN = (r0*f + v0 * g);
+	//cout << "rN: ";
+	//rN.print();
+	//cout << "rN Length: " << rN.length() << endl;
+	return rN;
+}
+
+//4.4-19
+Vector Satellite::computeVVec(float fD, float gD)
+{
+	Vector r0 = this->ephemeris.getR0();
+	Vector v0 = this->ephemeris.getV0();
+	return r0 * fD + v0 * gD;
+}
+
+//4.4-31
+float Satellite::computeSmallF(float x)
+{
+	float z = computeZ(x);
+	float bigC = computeCseries(z, 100);
+	float a = this->ephemeris.semiMajorA;
+	Vector r0 = this->ephemeris.getR0();
+	return 1.0f - (powf(x, 2.0f) / r0.length()) * bigC;
+}
+
+//4.4-34
+float Satellite::computeSmallG(float x, float t)
+{
+	float z = computeZ(x);
+	float bigS = computeSseries(z, 100);
+	return t - (powf(x, 3.0f) / std::sqrt(mu)) * bigS;
+}
+
+//4.4-35
+float Satellite::computeSmallGDerivative(float x, float rLength)
+{
+	float z = computeZ(x);
+	float bigC = computeCseries(z, 100);
+	return 1.0f - (powf(x, 2.0f) / rLength) * bigC;
+}
+
+//4.4-36
+float Satellite::computeSmallFDerivative(float x, float rLength)
+{
+	float z = computeZ(x);
+	float bigS = computeSseries(z, 100);
+	float r0Length = this->ephemeris.getR0().length();
+	return ((float)std::sqrt(mu) / (r0Length*rLength)) * x * (z * bigS - 1.0f);
+}
+
+//4.5-10
+float Satellite::computeXfirstGuess(float t)
+{
+	return ((float)std::sqrt(mu) * t) / this->ephemeris.semiMajorA;
+}
+
 
 // Call this every frame to update the satellite's position in orbit.
 void Satellite::update(float deltaT)
 {
 	try
 	{
-		calcOrbitPos(deltaT);
+		totalTime += (double)deltaT;
+		testKeplerProblem(totalTime);
+		//calcOrbitPos(deltaT);
 		Matrix f = Matrix();
 		f.translation(r);
 		uTransform = f;
@@ -423,7 +425,7 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	int runner = 0;
 	bool calc = true;
 	float stepper = 0.005f;
-
+	
 	while (runner < 900000 && calc) {
 		if (this->ephemeris.trueAnomaly > 2.0*M_PI+0.0001) {
 			//Stop point generation after one orbit
@@ -440,7 +442,7 @@ std::vector<Vector> Satellite::calcOrbitVis()
 
 
 	//Just for testing:
-	cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getCircularOrbitalPeriod() << endl;
+	//cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getCircularOrbitalPeriod() << endl;
 
 	return (resVec);
 }

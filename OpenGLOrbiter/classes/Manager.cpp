@@ -42,14 +42,23 @@ using std::endl;
 using std::cout;
 
 
+using time_point = std::chrono::time_point<std::chrono::steady_clock>;
+void chronoOut(time_point start, time_point end) {
+	using std::chrono::duration_cast;
+	int nano = duration_cast<std::chrono::nanoseconds>(end - start).count();
+	int mikro = duration_cast<std::chrono::microseconds>(end - start).count();
+	int milli = duration_cast<std::chrono::milliseconds>(end - start).count();
+	int secs = duration_cast<std::chrono::seconds>(end - start).count();
+	cout << "seconds:milli:micro:nano = " << secs << ":" << milli << ":" << mikro << ":" << nano << endl;
+}
 
 Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
 	addEarth();
 	//Sample with all parameters. This height corresponds to GEO.
 	//addSatellite(42164.0f * sizeF, 0.0f, 0.0f, 0.0f, 0.2f, 0.0, true, true);
-
-	/*
+	
+	/**/
 	// THIS IS THE GPS 'CONSTELLATION'
 	addSatellite(26550.0f * sizeF, 302.8080f, 56.01f, 279.2863f, 0.0186085f, 0);
 	addSatellite(26550.0f * sizeF, 302.6010f, 56.06f, 35.3566f, 0.0113652f, 0);
@@ -89,7 +98,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	//addSatellite(6796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.0f);
 	
 	// Random Satellite
-	addSatellite(9796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.1f);
+	//addSatellite(9796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.1f);
 
 	/**/
 	addEquatorLinePlane();
@@ -112,6 +121,7 @@ void Manager::addSatellite(float semiA, float lAscN, float incli, float argP, fl
 	addSatellite(o,orbitVis,fullLine);
 }
 
+
 void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color satColor)
 {
 	unique_ptr<PhongShader> uShader = std::make_unique<PhongShader>();
@@ -125,9 +135,14 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 		uModel->setShader(std::move(uCShader));
 		uModels.push_back(std::move(uModel));
 	}
+	/*
 	//Testing only!
-	sat->testKeplerProblem(200.f);
+	auto start = std::chrono::steady_clock::now();
+	auto end = std::chrono::steady_clock::now();
+	chronoOut(start, end);
+	/**/
 	this->satellites.push_back(std::move(sat));
+
 }
 
 void Manager::speedUpSats(float speedUp)
@@ -180,6 +195,8 @@ void Manager::update(float deltaT)
 	{
 		satellites[i]->update(deltaT);
 	}
+
+	
 	//TODO add planet updates
 
 	Cam.update();

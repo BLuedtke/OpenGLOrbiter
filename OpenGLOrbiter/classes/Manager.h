@@ -30,7 +30,7 @@ protected:
 	GLFWwindow* pWindow;
 	std::vector<std::unique_ptr<StandardModel>> uModels;
 	std::vector<std::unique_ptr<TriangleSphereModel>> planets;
-
+	double totalTime = 0.0;
 	void addEarth();
 	void addSatellite(float semiA, float lAscN, float incli, float argP, float ecc = 0.0f, double trueAnom = 0.0, bool orbitVis = true, bool fullLine = true);
 	void addSatellite(OrbitEphemeris o, bool orbitVis = true, bool fullLine = true, Color satColor = Color(.3f,.3f,.8f));

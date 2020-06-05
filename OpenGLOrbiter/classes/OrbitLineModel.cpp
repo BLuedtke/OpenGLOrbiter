@@ -23,7 +23,6 @@ void OrbitLineModel::draw(const BaseCamera & Cam)
 {
 	StandardModel::draw(Cam);
 	VB.activate();
-
 	//glDrawArrays(GL_LINE_STRIP, 0, VB.vertexCount());
 	glDrawArrays(GL_LINES, 0, VB.vertexCount());
 
@@ -46,6 +45,10 @@ void OrbitLineModel::evaluatePoints(bool fullLine)
 				Vector p1 = points[i];				
 				VB.addVertex(p1.X, p1.Y, p1.Z);
 			}
+			Vector p1 = points[points.size()-1];
+			VB.addVertex(p1.X, p1.Y, p1.Z);
+			p1 = points[0];
+			VB.addVertex(p1.X, p1.Y, p1.Z);
 		}
 		else {
 			std::cout << "NO POINTS TO DRAW THE ORBIT" << std::endl;

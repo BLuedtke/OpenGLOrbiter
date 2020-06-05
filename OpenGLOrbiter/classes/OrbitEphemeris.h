@@ -19,13 +19,17 @@ public:
 
 	float getCircularOrbitalPeriod();
 	void calcR0V0();
-	Vector r0;
-	Vector v0;
-
+	Vector getR0();
+	Vector getV0();
+	bool doR0V0exist = false;
+	
 	Matrix pqw;
 	bool pqwExists = false;
 	void calcPQWMatrix();
 	Matrix getOrCreatePQW();
+private:
+	Vector r0;
+	Vector v0;
 };
 
 #endif /* OrbitEphemeris_hpp */

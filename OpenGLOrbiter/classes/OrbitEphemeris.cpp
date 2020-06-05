@@ -42,15 +42,49 @@ float OrbitEphemeris::getCircularOrbitalPeriod()
 
 void OrbitEphemeris::calcR0V0()
 {
-	float semiMinorP = this->getOrCreateSemiMinorP();
-	float rScal = semiMinorP / (1 + eccentricity * cosf(0.0f));
+	try
+	{
+		float semiMinorP = this->getOrCreateSemiMinorP();
+		float rScal = semiMinorP / (1 + eccentricity * cosf(0.0f));
 
-	Matrix pqw = this->getOrCreatePQW();
-	Vector P = pqw.right();
-	Vector Q = pqw.backward();
-	r0 = P * rScal * cosf(0.0f) + Q * rScal * sinf(0.0f);
-	Vector temp = P * -1.0f * sinf(0.0f) + Q * (this->eccentricity + cosf(0.0f));
-	v0 = temp * (float)std::sqrt(mu / semiMinorP);
+		Matrix pqw = this->getOrCreatePQW();
+		Vector P = pqw.right();
+		Vector Q = pqw.backward();
+		r0 = P * rScal * cosf(0.0f) + Q * rScal * sinf(0.0f);
+		Vector temp = P * -1.0f * sinf(0.0f) + Q * (this->eccentricity + cosf(0.0f));
+		v0 = temp * (float)std::sqrt(mu / semiMinorP);
+		doR0V0exist = true;
+	}
+	catch (const std::exception& e)
+	{
+		doR0V0exist = false;
+		std::cout << e.what() << std::endl;
+	}
+	
+}
+
+Vector OrbitEphemeris::getR0()
+{
+	if (doR0V0exist) {
+		return r0;
+	}
+	else
+	{
+		calcR0V0();
+		return r0;
+	}
+}
+
+Vector OrbitEphemeris::getV0()
+{
+	if (doR0V0exist) {
+		return v0;
+	}
+	else
+	{
+		calcR0V0();
+		return v0;
+	}
 }
 
 

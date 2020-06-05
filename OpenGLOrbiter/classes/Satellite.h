@@ -22,6 +22,8 @@ public:
 private:
 	Vector v;
 	Vector r;
+	double totalTime = 0.0;
+
 	void calcOrbitPos(float deltaT, bool fixedStep = false);
 	double calcHeronKahanFormula(double a, double b, double c);
 	double calcHeronKahanFormula(Vector k, Vector i);
