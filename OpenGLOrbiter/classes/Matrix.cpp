@@ -191,8 +191,8 @@ Matrix& Matrix::rotationX(double Angle )
     m20= 0;					m23= 0;
     m30= 0;	m31= 0;	m32= 0;	m33= 1;
     
-    m11 = m22 = cos(Angle);
-    m21 = sin(Angle);
+    m11 = m22 = cosf((float)Angle);
+    m21 = sinf((float)Angle);
     m12 = -m21;
     
     return *this;
@@ -204,8 +204,8 @@ Matrix& Matrix::rotationY(double Angle )
             m21= 0;         m23= 0;
     m30= 0;	m31= 0;	m32= 0;	m33= 1;
     
-    m00 = m22 = cos(Angle);
-    m02 = sin(Angle);
+    m00 = m22 = cosf((float)Angle);
+    m02 = sinf((float)Angle);
     m20 = -m02;
     
     return *this;
@@ -217,39 +217,39 @@ Matrix& Matrix::rotationZ(double Angle )
     m20= 0;	m21= 0;	m22= 1;	m23= 0;
     m30= 0;	m31= 0;	m32= 0;	m33= 1;
     
-    m00 = m11 = cos(Angle);
-    m10= sin(Angle);
+    m00 = m11 = cosf((float)Angle);
+    m10= sinf((float)Angle);
     m01= -m10;
     
     return *this;
 }
 Matrix& Matrix::rotationYawPitchRoll(double Yaw, double Pitch, double Roll )
 {
-    float cosx = cos(Pitch);
-    float cosy = cos(Yaw);
-    float cosz = cos(Roll);
+    double cosx = cos(Pitch);
+	double cosy = cos(Yaw);
+	double cosz = cos(Roll);
     
-    float sinx = sin(Pitch);
-    float siny = sin(Yaw);
-    float sinz = sin(Roll);
+	double sinx = sin(Pitch);
+	double siny = sin(Yaw);
+	double sinz = sin(Roll);
     
-    m00 = cosz*cosy + sinz*sinx*siny;
-    m10 = sinz*cosx;
-    m20 = -cosz*siny + sinz*sinx*cosy;
-    m30 = 0;
+    m00 = (float)(cosz*cosy + sinz*sinx*siny);
+    m10 = (float)(sinz*cosx);
+    m20 = (float)(-cosz*siny + sinz*sinx*cosy);
+    m30 = 0.0f;
 
-    m01 = -sinz*cosy + cosz*sinx*siny;
-    m11 = cosz*cosx;
-    m21 = sinz*siny + cosz*sinx*cosy;
-    m31 = 0;
+    m01 = (float)(-sinz*cosy + cosz*sinx*siny);
+    m11 = (float)(cosz*cosx);
+    m21 = (float)(sinz*siny + cosz*sinx*cosy);
+    m31 = 0.0f;
     
-    m02 = cosx*siny;
-    m12 = -sinx;
-    m22 = cosx*cosy;
-    m32 = 0;
+    m02 = (float)(cosx*siny);
+    m12 = (float)(-sinx);
+    m22 = (float)(cosx*cosy);
+    m32 = 0.0f;
     
-    m03 = m13 = m23 = 0;
-    m33 = 1;
+    m03 = m13 = m23 = 0.f;
+    m33 = 1.f;
     
     return *this;
 }
@@ -261,8 +261,8 @@ Matrix& Matrix::rotationYawPitchRoll(const Vector& Angles )
 Matrix& Matrix::rotationAxis(const Vector& Axis, double Angle)
 {
 	
-    const float Si = sinf(Angle);
-    const float Co = cosf(Angle);
+    const float Si = sinf((float)Angle);
+    const float Co = cosf((float)Angle);
     const float OMCo = 1 - Co;
     Vector Ax = Axis;
     Ax.normalize();

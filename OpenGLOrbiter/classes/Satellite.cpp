@@ -135,7 +135,7 @@ double Satellite::computeZ(double x)
 }
 
 //4.4-10
-double Satellite::computeCseries(double z, unsigned int maxSteps)
+double Satellite::computeCseries(double z)
 {
 	double cz = 0.0;
 	if (z > 0.0000000000001) {
@@ -145,8 +145,8 @@ double Satellite::computeCseries(double z, unsigned int maxSteps)
 		cz = (1.0 - cosh(std::sqrt(-z))) / z;
 	}
 	else {
-		//cout << "C Series needed" << endl;
-		for (unsigned int k = 0; k < maxSteps; k++) {
+		// Assuming the series hopefully done w/ converging after 100 runs
+		for (unsigned int k = 0; k < 100; k++) {
 			double res = (pow((-z), (double)k) / factorial(2 * k + 2));
 			if (isnan(res)) {
 				break;
@@ -163,7 +163,7 @@ double Satellite::computeCseries(double z, unsigned int maxSteps)
 }
 
 //4.4-11
-double Satellite::computeSseries(double z, unsigned int maxSteps)
+double Satellite::computeSseries(double z)
 {
 	double sz = 0.0;
 	if (z > 0.000000000001) {
@@ -175,8 +175,8 @@ double Satellite::computeSseries(double z, unsigned int maxSteps)
 		sz = (sinh(sqZ) - sqZ) / std::sqrt(pow((-z), 3.0));
 	}
 	else {
-		//cout << "S Series needed" << endl;
-		for (unsigned int k = 0; k < maxSteps; k++) {
+		// Assuming the series hopefully done w/ converging after 100 runs
+		for (unsigned int k = 0; k < 100; k++) {
 			double res = (pow((-z), (double)k) / factorial(2 * k + 3));
 			if (isnan(res)) {
 				break;
@@ -196,8 +196,8 @@ double Satellite::computeSseries(double z, unsigned int maxSteps)
 double Satellite::computeTnByXn(double xn, double zn)
 {
 	// To be used with a trial Value for x
-	double bigC = computeCseries(zn, 100);
-	double bigS = computeSseries(zn, 100);
+	double bigC = computeCseries(zn);
+	double bigS = computeSseries(zn);
 	Vector r0 = this->ephemeris.getR0();
 	Vector v0 = this->ephemeris.getV0();
 
@@ -212,11 +212,9 @@ double Satellite::computeTnByXn(double xn, double zn)
 //4.4-15 Newton iteration
 double Satellite::xnNewtonIteration(double xn, double t, double tn, double zn)
 {
-	//Testing. Will be a loop with a break criteria when finished.
 	double xNext = xn;
 	double timeN = tn;
 	double zNext = zn;
-
 	//We may also need to check if anything becomes NAN during the iteration
 	for (unsigned int i = 0; i < 200; i++) {
 		double dtdx = computeNewDtDx(xNext);
@@ -242,8 +240,8 @@ double Satellite::computeNewDtDxWithMU(double xn)
 	Vector r0 = this->ephemeris.getR0();
 	Vector v0 = this->ephemeris.getV0();
 	double zn = computeZ(xn);
-	double bigC = computeCseries(zn, 400);
-	double bigS = computeSseries(zn, 400);
+	double bigC = computeCseries(zn);
+	double bigS = computeSseries(zn);
 
 	double term1 = pow(xn, 2.0) * bigC;
 	double term2 = (r0.dot(v0) / sqMU) * xn * (1.0 - zn * bigS);
@@ -273,7 +271,7 @@ Vector Satellite::computeVVec(double fD, double gD)
 double Satellite::computeSmallF(double x)
 {
 	double z = computeZ(x);
-	double bigC = computeCseries(z, 100);
+	double bigC = computeCseries(z);
 	double r0Length = this->ephemeris.getR0().length();
 	return (1.0 - (pow(x, 2.0) / r0Length) * bigC);
 }
@@ -284,8 +282,8 @@ double Satellite::computeSmallG(double x, double t)
 	Vector r0 = this->ephemeris.getR0();
 	Vector v0 = this->ephemeris.getV0();
 	double z = computeZ(x);
-	double bigS = computeSseries(z, 100);
-	double bigC = computeCseries(z, 100);
+	double bigS = computeSseries(z);
+	double bigC = computeCseries(z);
 	double res = (sqMU*t-pow(x,3.0)*bigS)/sqMU;
 	
 	//float res = (t - (pow(x, 3.0) * bigS / sqMU));
@@ -306,7 +304,7 @@ double Satellite::computeSmallG(double x, double t)
 double Satellite::computeSmallGDerivative(double x, double rLength)
 {
 	double z = computeZ(x);
-	double bigC = computeCseries(z, 100);
+	double bigC = computeCseries(z);
 	return 1.0f - (pow(x, 2.0) / rLength) * bigC;
 }
 
@@ -314,7 +312,7 @@ double Satellite::computeSmallGDerivative(double x, double rLength)
 double Satellite::computeSmallFDerivative(double x, double rLength)
 {
 	double z = computeZ(x);
-	double bigS = computeSseries(z, 100);
+	double bigS = computeSseries(z);
 	double r0Length = this->ephemeris.getR0().length();
 	return (sqMU / (r0Length*rLength)) * x * (z * bigS - 1.0);
 }
@@ -333,7 +331,6 @@ void Satellite::update(double deltaT)
 	{
 		totalTime += (deltaT*(double)speedUp);
 		calcKeplerProblem(totalTime);
-		//calcOrbitPos(deltaT);
 		Matrix f = Matrix();
 		f.translation(r);
 		uTransform = f;
@@ -344,103 +341,6 @@ void Satellite::update(double deltaT)
 	}
 }
 
-// Calculate the new position on orbit based on the current state + frameTime (deltaT).
-// Give fixedStep = true and a value for 'step' if the frametime should be ignored. -> Usually only used for calculation of Orbit-Visualization Points.
-void Satellite::calcOrbitPos(float deltaT, bool fixedStep) {
-	
-	double posAngle = 0.0;
-	if (fixedStep == true && deltaT > 0.0f) {
-		// fixedStep -> directly interpret deltaT as the progression of true anomaly.
-		this->ephemeris.trueAnomaly = this->ephemeris.trueAnomaly + deltaT;
-		posAngle = this->ephemeris.trueAnomaly;
-	} else {
-		//"Normal" calculation for the new angle.
-		this->ephemeris.trueAnomaly = (float)calcAngleProgression(deltaT * speedUp);
-		posAngle = this->ephemeris.trueAnomaly;
-	}
-
-	float semiMinorP = ephemeris.getOrCreateSemLatRect();
-	float rScal = semiMinorP / (1 + ephemeris.eccentricity * (float)cos(posAngle));
-
-	Matrix pqw = this->ephemeris.getOrCreatePQW();
-	Vector P = pqw.right();
-	Vector Q = pqw.backward();
-	r = P * rScal * (float)cos(posAngle) + Q* rScal * (float)sin(posAngle);
-	Vector temp = P * -1.0f*(float)sin(posAngle)+ Q * (ephemeris.eccentricity+ (float)cos(posAngle));
-	v = temp * (float)std::sqrt(mu / semiMinorP);
-	//cout << v.length() << endl;
-
-	// If you want to check: the length of h (r cross v) should always be the same for one satellite at any point in orbit
-	// Might be influenced by floating point inaccuracies
-	// Vector h is the specific angular momentum 
-	//Vector h = r.cross(v);
-	//cout << h.length() << endl;
-}
-
-// Calculate the new true anomaly (angle that describes where the satellite is along it's orbit) based on current state + frameTime (deltaT)
-double Satellite::calcAngleProgression(float deltaT)
-{
-	double nextAnomaly = 0.0;
-	if (r.length() <= 0.0001f || deltaT <= 0.001f) {
-		//Prevents numerical instability with very very short frametimes or invalid positions (near the origin).
-		nextAnomaly = 0.00001 + (double)this->ephemeris.trueAnomaly;
-	}
-	else {
-		// rCandidate = Candidate for new position based on naive progression. 
-		// Since the speed vector v can't "curve" with the orbit, this can't be used as a new position directly.
-		// It can however be used to approximate the 'new' true Anomaly, which can then be used to calculate the new position more accurately.
-		// This technique is very far from perfect, might be replaced.
-		Vector rCandidate = r + v * (deltaT);
-		// Get the angle between current position (r) and proposed new naive position (rCandidate).
-		nextAnomaly = calcHeronKahanFormula(rCandidate, r) + (double) this->ephemeris.trueAnomaly;
-		while (nextAnomaly > (M_PI*2.0f)) {
-			nextAnomaly = nextAnomaly - (M_PI*2.0);
-		}
-	}
-	return nextAnomaly;
-}
-
-//https://scicomp.stackexchange.com/questions/27689/numerically-stable-way-of-computing-angles-between-vectors
-//Returns the angle between the two vectors, given that |k| >= |i| -> The length of the vectors is used for angle calculation. Needs to be used carefully.
-double Satellite::calcHeronKahanFormula(Vector k, Vector i)
-{
-	double angle = 0.0;
-	try
-	{
-		float a = k.length();
-		float b = i.length();
-		float c = (k - i).length();
-		angle = calcHeronKahanFormula((double)a, (double)b, (double)c);
-	}
-	catch (const std::exception& e)
-	{
-		std::cout << e.what() << std::endl;
-	}
-	return angle;
-}
-
-//https://scicomp.stackexchange.com/questions/27689/numerically-stable-way-of-computing-angles-between-vectors
-// Calculates the angle between two Vectors. I advise using the overloaded methods accepting 2 Vectors.
-// Much much better then using 'standard' cos(angle) = (V1 dot V2) / (|V1| * |V2|)
-double Satellite::calcHeronKahanFormula(double a, double b, double c)
-{
-	double tMu = 0.000001;
-	if (a >= (b - 0.0001f)) {
-		if (b >= c && c >= 0.0f) {
-			tMu = c - (a - b);
-		}
-		else if (c > b && b >= 0) {
-			tMu = b - (a - c);
-		}
-		double term1 = ((a - b) + c)*tMu;
-		double term2 = (a + (b + c))*((a - c) + b);
-		return 2.0*atan(std::sqrt((term1) / (term2)));;
-	}
-	else {
-		//std::cerr << "Invalid TriangleB. a: " << a << "; b: " << b << endl;
-		return 0.00001;	// Emergency replacement, basically.
-	}
-}
 
 //Method for going through the orbit and calculating a collection of points along the orbit
 // This can be used to represent the trajectory with lines (used for OrbitLineModel).

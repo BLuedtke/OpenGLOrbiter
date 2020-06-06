@@ -15,19 +15,16 @@ public:
 	~Satellite();
 	std::vector<Vector> calcOrbitVis();
 	void update(double dtime);
-	OrbitEphemeris ephemeris;
 	float speedUp = 1.0f;
 	void calcKeplerProblem(double timePassed);
 
 private:
 	Vector v;
 	Vector r;
+	OrbitEphemeris ephemeris;
+
 	double totalTime = 0.0;
 
-	void calcOrbitPos(float deltaT, bool fixedStep = false);
-	double calcHeronKahanFormula(double a, double b, double c);
-	double calcHeronKahanFormula(Vector k, Vector i);
-	double calcAngleProgression(float deltaT);
 
 	double computeXfirstGuess(double t);
 	double computeZ(double x);
@@ -45,8 +42,8 @@ private:
 	Vector computeRVec(double f, double g);
 	Vector computeVVec(double fD, double gD);
 	
-	double computeCseries(double z, unsigned int maxSteps);
-	double computeSseries(double z, unsigned int maxSteps);
+	double computeCseries(double z);
+	double computeSseries(double z);
 };
 
 #endif /* Satellite_hpp */

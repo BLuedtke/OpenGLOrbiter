@@ -45,10 +45,10 @@ using std::cout;
 using time_point = std::chrono::time_point<std::chrono::steady_clock>;
 void chronoOut(time_point start, time_point end) {
 	using std::chrono::duration_cast;
-	int nano = duration_cast<std::chrono::nanoseconds>(end - start).count();
-	int mikro = duration_cast<std::chrono::microseconds>(end - start).count();
-	int milli = duration_cast<std::chrono::milliseconds>(end - start).count();
-	int secs = duration_cast<std::chrono::seconds>(end - start).count();
+	auto nano = duration_cast<std::chrono::nanoseconds>(end - start).count();
+	auto mikro = duration_cast<std::chrono::microseconds>(end - start).count();
+	auto milli = duration_cast<std::chrono::milliseconds>(end - start).count();
+	auto secs = duration_cast<std::chrono::seconds>(end - start).count();
 	cout << "seconds:milli:micro:nano = " << secs << ":" << milli << ":" << mikro << ":" << nano << endl;
 }
 
@@ -142,26 +142,8 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 		unique_ptr<StandardModel> uModel = std::make_unique<OrbitLineModel>(resOrbit,fullLine);
 		uModel->setShader(std::move(uCShader));
 		uModels.push_back(std::move(uModel));
-		/*
-		resOrbit = sat->calcOrbitVis2();
-		uCShader = std::make_unique<FlatColorShader>(Color(1, 0, 0));
-		uModel = std::make_unique<OrbitLineModel>(resOrbit, Color(1, 0, 0), fullLine);
-		uModel->setShader(std::move(uCShader));
-		uModels.push_back(std::move(uModel));
-		/**/
 	}
-	/*
-	//Testing only!
-	auto start = std::chrono::steady_clock::now();
-	auto end = std::chrono::steady_clock::now();
-	chronoOut(start, end);
-	/**/
-	//float myScaleTP = sat->ephemeris.getEllipseOrbitalPeriod();
-	//float bigScaleTP = sat->ephemeris.getCircularOrbitalPeriodBig();
-	//cout << "myScaleTP: " << myScaleTP << endl;
-	//cout << "BigScaleTP: " << bigScaleTP << endl;
 	this->satellites.push_back(std::move(sat));
-
 }
 
 void Manager::speedUpSats(float speedUp)
