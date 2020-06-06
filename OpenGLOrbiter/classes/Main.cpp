@@ -65,7 +65,7 @@ int main () {
 			double delta = now - lastTime;
 			lastTime = now;
             glfwPollEvents();
-            App.update((float)delta);
+            App.update(delta);
             App.draw();
             glfwSwapBuffers (window);
         }

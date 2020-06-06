@@ -14,10 +14,10 @@ public:
 	Satellite();
 	~Satellite();
 	std::vector<Vector> calcOrbitVis();
-	void update(float dtime);
+	void update(double dtime);
 	OrbitEphemeris ephemeris;
 	float speedUp = 1.0f;
-	void calcKeplerProblem(float timePassed);
+	void calcKeplerProblem(double timePassed);
 
 private:
 	Vector v;
@@ -29,24 +29,24 @@ private:
 	double calcHeronKahanFormula(Vector k, Vector i);
 	double calcAngleProgression(float deltaT);
 
-	float computeXfirstGuess(float t);
-	float computeZ(float x);
+	double computeXfirstGuess(double t);
+	double computeZ(double x);
 
-	float xnNewtonIteration(float xn, float t, float tn, float xf);
-	float computeNewDtDx(float xn);
-	float computeNewDtDxWithMU(float xn);
-	float computeTnByXn(float x, float z);
+	double xnNewtonIteration(double xn, double t, double tn, double xf);
+	double computeNewDtDx(double xn);
+	double computeNewDtDxWithMU(double xn);
+	double computeTnByXn(double x, double z);
 	
-	float computeSmallF(float x);
-	float computeSmallG(float x, float t);
-	float computeSmallFDerivative(float x, float rLength);
-	float computeSmallGDerivative(float x, float rLength);
+	double computeSmallF(double x);
+	double computeSmallG(double x, double t);
+	double computeSmallFDerivative(double x, double rLength);
+	double computeSmallGDerivative(double x, double rLength);
 
-	Vector computeRVec(float f, float g);
-	Vector computeVVec(float fD, float gD);
+	Vector computeRVec(double f, double g);
+	Vector computeVVec(double fD, double gD);
 	
-	float computeCseries(float z, unsigned int maxSteps);
-	float computeSseries(float z, unsigned int maxSteps);
+	double computeCseries(double z, unsigned int maxSteps);
+	double computeSseries(double z, unsigned int maxSteps);
 };
 
 #endif /* Satellite_hpp */

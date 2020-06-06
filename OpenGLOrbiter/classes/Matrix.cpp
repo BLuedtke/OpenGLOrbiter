@@ -184,7 +184,7 @@ Matrix& Matrix::translation(const Vector& XYZ )
 {
     return translation(XYZ.X, XYZ.Y, XYZ.Z);
 }
-Matrix& Matrix::rotationX(float Angle )
+Matrix& Matrix::rotationX(double Angle )
 {
     m00= 1;	m01= 0;	m02= 0;	m03= 0;
     m10= 0;					m13= 0;
@@ -197,7 +197,7 @@ Matrix& Matrix::rotationX(float Angle )
     
     return *this;
 }
-Matrix& Matrix::rotationY(float Angle )
+Matrix& Matrix::rotationY(double Angle )
 {
             m01= 0;         m03= 0;
     m10= 0;	m11= 1;	m12= 0;	m13= 0;
@@ -210,7 +210,7 @@ Matrix& Matrix::rotationY(float Angle )
     
     return *this;
 }
-Matrix& Matrix::rotationZ(float Angle )
+Matrix& Matrix::rotationZ(double Angle )
 {
                     m02= 0;	m03= 0;
                     m12= 0;	m13= 0;
@@ -223,7 +223,7 @@ Matrix& Matrix::rotationZ(float Angle )
     
     return *this;
 }
-Matrix& Matrix::rotationYawPitchRoll( float Yaw, float Pitch, float Roll )
+Matrix& Matrix::rotationYawPitchRoll(double Yaw, double Pitch, double Roll )
 {
     float cosx = cos(Pitch);
     float cosy = cos(Yaw);
@@ -258,7 +258,7 @@ Matrix& Matrix::rotationYawPitchRoll(const Vector& Angles )
     rotationYawPitchRoll(Angles.X, Angles.Y, Angles.Z);
     return *this;
 }
-Matrix& Matrix::rotationAxis(const Vector& Axis, float Angle)
+Matrix& Matrix::rotationAxis(const Vector& Axis, double Angle)
 {
 	
     const float Si = sinf(Angle);

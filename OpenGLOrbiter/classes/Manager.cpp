@@ -31,7 +31,7 @@
 #else
 #define ASSET_DIRECTORY "../assets/"
 #endif
-#define sizeF 1.0f/6371.0f
+#define sizeF 1.0f/6378.0f
 
 #define DEG_TO_RAD(x) ((x)*0.0174532925f)
 #define RAD_TO_DEG(x) ((x)*57.2957795f)
@@ -56,64 +56,68 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
 	addEarth();
 	//Sample with all parameters. This height corresponds to GEO.
-	//addSatellite(42164.0f * sizeF, 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
+	//addSatellite(42164.0f  , 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
 	
-	
+	/*
 	// THIS IS THE GPS 'CONSTELLATION'
-	addSatellite(26550.0f * sizeF, 302.8080f, 56.01f, 279.2863f, 0.0186085f, 0);
-	addSatellite(26550.0f * sizeF, 302.6010f, 56.06f, 35.3566f, 0.0113652f, 0);
-	addSatellite(26550.0f * sizeF, 301.5764f, 56.01f, 65.4874f, 0.0078611f, 0);
-	addSatellite(26550.0f * sizeF, 297.6432f, 55.32f, 52.6418f, 0.0090654f, 0);
-	addSatellite(26550.0f * sizeF, 295.5525f, 54.82f, 10.4744f, 0.0046989f, 0);
-	addSatellite(26550.0f * sizeF, 239.0614f, 54.86f, 6.1746f, 0.0094815f, 0);
-	addSatellite(26550.0f * sizeF, 239.5030f, 53.77f, 198.5504f, 0.0047049f, 0);
-	addSatellite(26550.0f * sizeF, 238.2884f, 54.61f, 223.4894f, 0.0140270f, 0);
-	addSatellite(26550.0f * sizeF, 234.0640f, 53.65f, 37.1639f, 0.0095254f, 0);
-	addSatellite(26550.0f * sizeF, 184.8549f, 55.46f, 60.1978f, 0.0039199f, 0);
-	addSatellite(26550.0f * sizeF, 182.1325f, 55.03f, 250.6634f, 0.0116744f, 0);
-	addSatellite(26550.0f * sizeF, 176.1806f, 54.06f, 235.4258f, 0.0144104f, 0);
-	addSatellite(26550.0f * sizeF, 171.5119f, 53.18f, 49.6816f, 0.0121179f, 0);
-	addSatellite(26550.0f * sizeF, 177.0815f, 55.09f, 222.6391f, 0.0041555f, 0);
-	addSatellite(26550.0f * sizeF, 179.3429f, 55.09f, 223.8194f, 0.0008908f, 0);
-	addSatellite(26550.0f * sizeF, 176.5922f, 54.58f, 105.8600f, 0.0012930f, 0);
-	addSatellite(26550.0f * sizeF, 117.4385f, 55.09f, 211.3608f, 0.0057282f, 0);
-	addSatellite(26550.0f * sizeF, 109.8874f, 53.52f, 154.9692f, 0.0050379f, 0);
-	addSatellite(26550.0f * sizeF, 113.0046f, 53.32f, 292.6875f, 0.0073969f, 0);
-	addSatellite(26550.0f * sizeF, 115.7546f, 54.58f, 44.0539f, 0.0057386f, 0);
-	addSatellite(26550.0f * sizeF, 117.5668f, 55.33f, 36.8613f, 0.0027203f, 0);
-	addSatellite(26550.0f * sizeF, 53.7124f, 54.61f, 283.9817f, 0.019f, 0);
-	addSatellite(26550.0f * sizeF, 53.5235f, 54.96f, 266.9234f, 0.0199562f, 0);
-	addSatellite(26550.0f * sizeF, 57.9073f, 56.16f, 44.0277f, 0.0097490f, 0);
-	addSatellite(26550.0f * sizeF, 57.4396f, 56.13f, 296.4550f, 0.0021052f, 0);
-	addSatellite(26550.0f * sizeF,   3.4232f, 56.27f, 93.3527f,	0.0092063f, 0);
-	addSatellite(26550.0f * sizeF,   0.7710f, 56.37f, 266.0448f,	0.0134264f, 0);
-	addSatellite(26550.0f * sizeF,   1.4579f, 56.47f, 114.9660f,	0.0012895f, 0);
-	addSatellite(26550.0f * sizeF, 357.4799f, 56.04f, 30.9207f, 0.0081731f, 0);
-	addSatellite(26550.0f * sizeF, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
+	addSatellite(26550.0f, 302.8080f, 56.01f, 279.2863f, 0.0186085f, 0);
+	addSatellite(26550.0f, 302.6010f, 56.06f, 35.3566f, 0.0113652f, 0);
+	addSatellite(26550.0f, 301.5764f, 56.01f, 65.4874f, 0.0078611f, 0);
+	addSatellite(26550.0f, 297.6432f, 55.32f, 52.6418f, 0.0090654f, 0);
+	addSatellite(26550.0f, 295.5525f, 54.82f, 10.4744f, 0.0046989f, 0);
+	addSatellite(26550.0f, 239.0614f, 54.86f, 6.1746f, 0.0094815f, 0);
+	addSatellite(26550.0f, 239.5030f, 53.77f, 198.5504f, 0.0047049f, 0);
+	addSatellite(26550.0f, 238.2884f, 54.61f, 223.4894f, 0.0140270f, 0);
+	addSatellite(26550.0f, 234.0640f, 53.65f, 37.1639f, 0.0095254f, 0);
+	addSatellite(26550.0f, 184.8549f, 55.46f, 60.1978f, 0.0039199f, 0);
+	addSatellite(26550.0f, 182.1325f, 55.03f, 250.6634f, 0.0116744f, 0);
+	addSatellite(26550.0f, 176.1806f, 54.06f, 235.4258f, 0.0144104f, 0);
+	addSatellite(26550.0f, 171.5119f, 53.18f, 49.6816f, 0.0121179f, 0);
+	addSatellite(26550.0f, 177.0815f, 55.09f, 222.6391f, 0.0041555f, 0);
+	addSatellite(26550.0f, 179.3429f, 55.09f, 223.8194f, 0.0008908f, 0);
+	addSatellite(26550.0f, 176.5922f, 54.58f, 105.8600f, 0.0012930f, 0);
+	addSatellite(26550.0f, 117.4385f, 55.09f, 211.3608f, 0.0057282f, 0);
+	addSatellite(26550.0f, 109.8874f, 53.52f, 154.9692f, 0.0050379f, 0);
+	addSatellite(26550.0f, 113.0046f, 53.32f, 292.6875f, 0.0073969f, 0);
+	addSatellite(26550.0f, 115.7546f, 54.58f, 44.0539f, 0.0057386f, 0);
+	addSatellite(26550.0f, 117.5668f, 55.33f, 36.8613f, 0.0027203f, 0);
+	addSatellite(26550.0f, 53.7124f, 54.61f, 283.9817f, 0.019f, 0);
+	addSatellite(26550.0f, 53.5235f, 54.96f, 266.9234f, 0.0199562f, 0);
+	addSatellite(26550.0f, 57.9073f, 56.16f, 44.0277f, 0.0097490f, 0);
+	addSatellite(26550.0f, 57.4396f, 56.13f, 296.4550f, 0.0021052f, 0);
+	addSatellite(26550.0f,   3.4232f, 56.27f, 93.3527f,	0.0092063f, 0);
+	addSatellite(26550.0f,   0.7710f, 56.37f, 266.0448f,	0.0134264f, 0);
+	addSatellite(26550.0f,   1.4579f, 56.47f, 114.9660f,	0.0012895f, 0);
+	addSatellite(26550.0f, 357.4799f, 56.04f, 30.9207f, 0.0081731f, 0);
+	addSatellite(26550.0f, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
 	/**/
-	//addSatellite(26550.0f * sizeF, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
+	//addSatellite(26550.0f, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
 
 
 	
 	
 	// Random Satellite
-	//addSatellite(9796.0f * sizeF, 0.0f, 51.6f, 0.0f, 0.2f);
-	//addSatellite(32164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.8f);
-	//addSatellite(18164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.6f);
-	//addSatellite(18164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.4f);
-	//addSatellite(18164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.2f);
-	//addSatellite(18164.0f * sizeF, 0.0f, 19.0f, 0.0f, 0.0f);
+	//addSatellite(9796.0f, 0.0f, 51.6f, 0.0f, 0.2f);
+	//addSatellite(32164.0f, 0.0f, 19.0f, 0.0f, 0.8f);
+	
+	//addSatellite(28164.0f, 0.0f, 19.0f, 0.0f, 0.0f);
+	addSatellite(9164.0f, 0.0f, 19.0f, 0.0f, 0.1f);
+
+	//addSatellite(18164.0f, 0.0f, 19.0f, 0.0f, 0.4f);
+	//addSatellite(18164.0f, 0.0f, 19.0f, 0.0f, 0.2f);
+	//addSatellite(18164.0f, 0.0f, 19.0f, 0.0f, 0.0f);
 
 	/**/
 	addEquatorLinePlane();
 
 	//THIS SPEEDS UP EVERYTHING BY THE FACTOR
-	speedUpSats(205.0f);
+	speedUpSats(90.f);
+	//speedUpSats(0.000001f);
 	//-> Using this to slow things down might cause numerical instability!
 }
 
 //Passing fullLine=false is experimental and lead to numerical instability. More robust orbit visualization techniques are being thought of.
-void Manager::addSatellite(float semiA, float lAscN, float incli, float argP, float ecc, double trueAnom, bool orbitVis, bool fullLine )
+void Manager::addSatellite(double semiA, double lAscN, double incli, double argP, double ecc, double trueAnom, bool orbitVis, bool fullLine )
 {
 	OrbitEphemeris o = OrbitEphemeris();
 	o.semiMajorA = semiA;
@@ -152,6 +156,10 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 	auto end = std::chrono::steady_clock::now();
 	chronoOut(start, end);
 	/**/
+	//float myScaleTP = sat->ephemeris.getEllipseOrbitalPeriod();
+	//float bigScaleTP = sat->ephemeris.getCircularOrbitalPeriodBig();
+	//cout << "myScaleTP: " << myScaleTP << endl;
+	//cout << "BigScaleTP: " << bigScaleTP << endl;
 	this->satellites.push_back(std::move(sat));
 
 }
@@ -200,11 +208,16 @@ void Manager::start()
     glCullFace(GL_BACK);	
 }
 
-void Manager::update(float deltaT)
+void Manager::update(double deltaT)
 {
-	for (unsigned int i = 0; i < satellites.size(); i++)
-	{
-		satellites[i]->update(deltaT);
+	if (deltaT < 0.5) {
+		for (unsigned int i = 0; i < satellites.size(); i++)
+		{
+			satellites[i]->update(deltaT);
+		}
+	}
+	else {
+		cout << "Very long frame: " << deltaT << endl;
 	}
 
 	

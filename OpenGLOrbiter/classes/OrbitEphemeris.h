@@ -6,18 +6,18 @@
 class OrbitEphemeris {
 public:
 	OrbitEphemeris();
-	OrbitEphemeris(float semiA,float ecc, float incli,float longAscNode,float argP, float trueAnomal);
-	float semiMajorA;	// a
-	float eccentricity; // e
-	float inclination;  // i
-	float longitudeAsc; // Omega
-	float argPeriaps;	// w (small Omega)
+	OrbitEphemeris(double semiA, double ecc, double incli, double longAscNode, double argP, double trueAnomal);
+	double semiMajorA;	// a
+	double eccentricity; // e
+	double inclination;  // i
+	double longitudeAsc; // Omega
+	double argPeriaps;	// w (small Omega)
 	double trueAnomaly;  // T
 	
-	float semiMinorP = 0.0f;
-	float getOrCreateSemiMinorP();
+	double semiMinorP = 0.0f;
+	double getOrCreateSemLatRect();
 
-	float getCircularOrbitalPeriod();
+	double getEllipseOrbitalPeriod();
 	void calcR0V0();
 	Vector getR0();
 	Vector getV0();

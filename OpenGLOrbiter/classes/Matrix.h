@@ -54,12 +54,12 @@ public:
     Matrix& multiply(const Matrix& M );
     Matrix& translation(float X, float Y, float Z );
     Matrix& translation(const Vector& XYZ );
-    Matrix& rotationX(float Angle );
-    Matrix& rotationY(float Angle );
-    Matrix& rotationZ(float Angle );
-    Matrix& rotationYawPitchRoll( float Yaw, float Pitch, float Roll );
+    Matrix& rotationX(double Angle );
+    Matrix& rotationY(double Angle );
+    Matrix& rotationZ(double Angle );
+    Matrix& rotationYawPitchRoll(double Yaw, double Pitch, double Roll );
     Matrix& rotationYawPitchRoll(const Vector& Angles );
-    Matrix& rotationAxis(const Vector& Axis, float Angle);
+    Matrix& rotationAxis(const Vector& Axis, double Angle);
     Matrix& scale(float ScaleX, float ScaleY, float ScaleZ );
     Matrix& scale(const Vector& Scalings );
     Matrix& scale(float Scaling );

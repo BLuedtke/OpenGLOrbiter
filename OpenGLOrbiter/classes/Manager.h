@@ -21,7 +21,7 @@ class Manager
 public:
     Manager(GLFWwindow* pWin);
     void start();
-    void update(float deltaT);
+    void update(double deltaT);
     void draw();
     void end();
 protected:
@@ -32,7 +32,7 @@ protected:
 	std::vector<std::unique_ptr<TriangleSphereModel>> planets;
 	double totalTime = 0.0;
 	void addEarth();
-	void addSatellite(float semiA, float lAscN, float incli, float argP, float ecc = 0.0f, double trueAnom = 0.0, bool orbitVis = true, bool fullLine = true);
+	void addSatellite(double semiA, double lAscN, double incli, double argP, double ecc = 0.0f, double trueAnom = 0.0, bool orbitVis = true, bool fullLine = true);
 	void addSatellite(OrbitEphemeris o, bool orbitVis = true, bool fullLine = true, Color satColor = Color(.3f,.3f,.8f));
 	void speedUpSats(float speedUp);
 	void addEquatorLinePlane();

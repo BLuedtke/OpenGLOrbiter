@@ -3,9 +3,17 @@
 #include "OrbitEphemeris.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#ifndef muS
+#define muS 0.0000015399
+#endif // !muS
 #ifndef mu
-#define mu 0.0000015399
+// This uses the unit km³/s², NOT m³/s²!!
+#define mu (double)398600
 #endif // !mu
+#ifndef sizeFactor
+#define sizeFactor 1.0f/6378.0f
+#endif // !sizeFactor
+
 
 
 OrbitEphemeris::OrbitEphemeris()
@@ -19,25 +27,25 @@ OrbitEphemeris::OrbitEphemeris()
 	trueAnomaly = 0.0;
 }
 
-OrbitEphemeris::OrbitEphemeris(float semiA, float ecc, float incli, 
-								float longAscNode, float argP, float trueAnomal) :
+OrbitEphemeris::OrbitEphemeris(double semiA, double ecc, double incli,
+	double longAscNode, double argP, double trueAnomal) :
 	semiMajorA(semiA), eccentricity(ecc), inclination(incli),
 	longitudeAsc(longAscNode), argPeriaps(argP), trueAnomaly(trueAnomal)
 {
 	;
 }
 
-float OrbitEphemeris::getOrCreateSemiMinorP()
+double OrbitEphemeris::getOrCreateSemLatRect()
 {
-	if (this->semiMinorP == 0.0f || (this->semiMinorP > 0.0f - 0.00001f && this->semiMinorP < 0.0f + 0.000001f)) {
-		this->semiMinorP = semiMajorA*(1.0f - pow(eccentricity,2.0));
+	if (this->semiMinorP == 0.0 || (this->semiMinorP > -0.0000000001 && this->semiMinorP < 0.0000000001)) {
+		this->semiMinorP = semiMajorA*(1.0 - pow(eccentricity,2.0));
 	}
 	return semiMinorP;
 }
 
-float OrbitEphemeris::getCircularOrbitalPeriod()
+double OrbitEphemeris::getEllipseOrbitalPeriod()
 {
-	return 2.0f * (float)M_PI * std::sqrtf(std::powf(semiMajorA, 3.0f) / (float)mu);
+	return 2.0 * M_PI * std::sqrt(std::pow(semiMajorA, 3.0) / mu);
 }
 
 void OrbitEphemeris::calcR0V0()
@@ -45,23 +53,19 @@ void OrbitEphemeris::calcR0V0()
 	try
 	{
 
-		float semiMinorP = this->getOrCreateSemiMinorP();
+		double semiLatRect = this->getOrCreateSemLatRect();
 		if (eccentricity >= 1.0f) {
-			//semiMinorP
+			//semiLatRect
 		}
-		float rScal = semiMinorP / (1 + eccentricity * 1.0f);
-		float h = std::sqrt(mu*semiMinorP);
-		std::cout << "1.7-9 h: " << h << std::endl;
+		float rScal = (float)(semiLatRect / (1.0 + eccentricity * 1.0));
 		Matrix pqw = this->getOrCreatePQW();
 		Vector P = pqw.right();
 		Vector Q = pqw.backward();
-		r0 = P * rScal * 1.0f + Q * rScal * 0.0f;
-		Vector temp = P * -1.0f * 0.0f + Q * (this->eccentricity + 1.0f);
-		v0 = temp * (float)std::sqrt(mu / semiMinorP);
-		Vector h0 = r0.cross(v0);
-		std::cout << "r0xV0 h: " << h0.length() << std::endl;
-		float a = (-mu) / (powf(v0.length(), 2.0f) - 2 * mu / r0.length());
-		std::cout << "Given a: " << semiMajorA << "; r0v0 a: " << a << std::endl;
+		//This is simplified by assuming r0 and v0 are always @ perigee. 
+		// For more complicated setups, this'll need improvement.
+		r0 = P * rScal * 1.0f;
+		Vector temp = Q * ((float)this->eccentricity + 1.0f);
+		v0 = temp * (float)std::sqrt(mu / semiLatRect);
 		doR0V0exist = true;
 	}
 	catch (const std::exception& e)
