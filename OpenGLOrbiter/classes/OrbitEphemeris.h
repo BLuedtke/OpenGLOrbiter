@@ -14,22 +14,21 @@ public:
 	double argPeriaps;	// w (small Omega)
 	double trueAnomaly;  // T
 	
-	double semiMinorP = 0.0f;
 	double getOrCreateSemLatRect();
-
 	double getEllipseOrbitalPeriod();
-	void calcR0V0();
+
 	Vector getR0();
 	Vector getV0();
-	bool doR0V0exist = false;
-	
-	Matrix pqw;
-	bool pqwExists = false;
-	void calcPQWMatrix();
-	Matrix getOrCreatePQW();
+	Matrix getPQWMatrix();
 private:
+	double semiLatRect = 0.0;
 	Vector r0;
 	Vector v0;
+	Matrix pqw;
+	bool doR0V0exist = false;
+	bool pqwExists = false;
+	void calcPQWMatrix();
+	void calcR0V0();
 };
 
 #endif /* OrbitEphemeris_hpp */

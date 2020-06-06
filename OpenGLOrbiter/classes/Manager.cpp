@@ -58,7 +58,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	//Sample with all parameters. This height corresponds to GEO.
 	//addSatellite(42164.0f  , 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
 	
-	/*
+	/**/
 	// THIS IS THE GPS 'CONSTELLATION'
 	addSatellite(26550.0f, 302.8080f, 56.01f, 279.2863f, 0.0186085f, 0);
 	addSatellite(26550.0f, 302.6010f, 56.06f, 35.3566f, 0.0113652f, 0);
@@ -97,22 +97,14 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	
 	
 	// Random Satellite
-	//addSatellite(9796.0f, 0.0f, 51.6f, 0.0f, 0.2f);
-	//addSatellite(32164.0f, 0.0f, 19.0f, 0.0f, 0.8f);
-	
 	//addSatellite(28164.0f, 0.0f, 19.0f, 0.0f, 0.0f);
 	addSatellite(9164.0f, 0.0f, 19.0f, 0.0f, 0.1f);
-
-	//addSatellite(18164.0f, 0.0f, 19.0f, 0.0f, 0.4f);
-	//addSatellite(18164.0f, 0.0f, 19.0f, 0.0f, 0.2f);
-	//addSatellite(18164.0f, 0.0f, 19.0f, 0.0f, 0.0f);
 
 	/**/
 	addEquatorLinePlane();
 
-	//THIS SPEEDS UP EVERYTHING BY THE FACTOR
-	speedUpSats(90.f);
-	//speedUpSats(0.000001f);
+	//THIS SPEEDS UP EVERYTHING BY THE FACTOR passed in the parameter
+	speedUpSats(1.f);
 	//-> Using this to slow things down might cause numerical instability!
 }
 

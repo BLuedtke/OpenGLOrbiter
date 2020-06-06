@@ -37,10 +37,10 @@ OrbitEphemeris::OrbitEphemeris(double semiA, double ecc, double incli,
 
 double OrbitEphemeris::getOrCreateSemLatRect()
 {
-	if (this->semiMinorP == 0.0 || (this->semiMinorP > -0.0000000001 && this->semiMinorP < 0.0000000001)) {
-		this->semiMinorP = semiMajorA*(1.0 - pow(eccentricity,2.0));
+	if (this->semiLatRect == 0.0 || (this->semiLatRect > -0.0000000001 && this->semiLatRect < 0.0000000001)) {
+		this->semiLatRect = semiMajorA*(1.0 - pow(eccentricity,2.0));
 	}
-	return semiMinorP;
+	return semiLatRect;
 }
 
 double OrbitEphemeris::getEllipseOrbitalPeriod()
@@ -54,11 +54,8 @@ void OrbitEphemeris::calcR0V0()
 	{
 
 		double semiLatRect = this->getOrCreateSemLatRect();
-		if (eccentricity >= 1.0f) {
-			//semiLatRect
-		}
 		float rScal = (float)(semiLatRect / (1.0 + eccentricity * 1.0));
-		Matrix pqw = this->getOrCreatePQW();
+		Matrix pqw = this->getPQWMatrix();
 		Vector P = pqw.right();
 		Vector Q = pqw.backward();
 		//This is simplified by assuming r0 and v0 are always @ perigee. 
@@ -119,7 +116,7 @@ void OrbitEphemeris::calcPQWMatrix()
 	}
 }
 
-Matrix OrbitEphemeris::getOrCreatePQW()
+Matrix OrbitEphemeris::getPQWMatrix()
 {
 	if (pqwExists == true) {
 		return pqw;

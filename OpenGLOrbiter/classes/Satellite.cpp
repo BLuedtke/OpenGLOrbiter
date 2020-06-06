@@ -221,7 +221,7 @@ double Satellite::xnNewtonIteration(double xn, double t, double tn, double zn)
 		xNext = xNext + ((t - timeN) / dtdx);
 		zNext = computeZ(xNext);
 		timeN = computeTnByXn(xNext, zNext);
-		if ((t - timeN) < 0.00001) {
+		if ((t - timeN) < 0.000001) {
 			break;
 		}
 	}
@@ -234,7 +234,7 @@ double Satellite::computeNewDtDx(double xn)
 	return (computeNewDtDxWithMU(xn) / sqMU);
 }
 
-//4.4-17 basically = rLength (later)
+//4.4-17 basically = rLength
 double Satellite::computeNewDtDxWithMU(double xn)
 {
 	Vector r0 = this->ephemeris.getR0();
