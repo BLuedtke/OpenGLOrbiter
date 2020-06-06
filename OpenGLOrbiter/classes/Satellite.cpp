@@ -94,7 +94,7 @@ void Satellite::calcKeplerProblem(double timePassed)
 		double tn = computeTnByXn(xn, zn); //NAN if eccentricity = 1
 		double x = xnNewtonIteration(xn, timePassed, tn, zn);
 		
-		//Evaluate f and g from equations (4.4-31) and (4.4-34);then compute r and r.length from equation (4.4-18)
+		//Evaluate f and g from equations (4.4-31) and (4.4-32);then compute r and r.length from equation (4.4-18)
 		double f = computeSmallF(x);
 		double g = computeSmallG(x, timePassed);
 		//Now compute r by 4.4-18
@@ -145,12 +145,9 @@ double Satellite::computeCseries(double z)
 		cz = (1.0 - cosh(std::sqrt(-z))) / z;
 	}
 	else {
-		// Assuming the series hopefully done w/ converging after 100 runs
-		for (unsigned int k = 0; k < 100; k++) {
+		// This is a form of stumpff's formulas. Convergence is usually very quick.
+		for (unsigned int k = 0; k < 20; k++) {
 			double res = (pow((-z), (double)k) / factorial(2 * k + 2));
-			if (isnan(res)) {
-				break;
-			}
 			double save = cz;
 			cz = cz + res;
 			if (isnan(cz)) {
@@ -175,12 +172,9 @@ double Satellite::computeSseries(double z)
 		sz = (sinh(sqZ) - sqZ) / std::sqrt(pow((-z), 3.0));
 	}
 	else {
-		// Assuming the series hopefully done w/ converging after 100 runs
-		for (unsigned int k = 0; k < 100; k++) {
+		// This is a form of stumpff's formulas. Convergence is usually very quick.
+		for (unsigned int k = 0; k < 20; k++) {
 			double res = (pow((-z), (double)k) / factorial(2 * k + 3));
-			if (isnan(res)) {
-				break;
-			}
 			double save = sz;
 			sz = sz + res;
 			if (isnan(sz)) {
@@ -222,6 +216,7 @@ double Satellite::xnNewtonIteration(double xn, double t, double tn, double zn)
 		zNext = computeZ(xNext);
 		timeN = computeTnByXn(xNext, zNext);
 		if ((t - timeN) < 0.000001) {
+			//cout << "Approximated time: " << timeN << endl;
 			break;
 		}
 	}
@@ -277,6 +272,8 @@ double Satellite::computeSmallF(double x)
 }
 
 //4.4-34 / (4.4-32)
+//Testing showed that using equation 4.4-34 produced high error for trueAnomaly < Pi (so the first half of the orbit).
+// 4.4-32 (which is being used here) does produce correct results. So far, I've not been able to really determine why that is the case.
 double Satellite::computeSmallG(double x, double t)
 {
 	Vector r0 = this->ephemeris.getR0();
@@ -284,20 +281,7 @@ double Satellite::computeSmallG(double x, double t)
 	double z = computeZ(x);
 	double bigS = computeSseries(z);
 	double bigC = computeCseries(z);
-	double res = (sqMU*t-pow(x,3.0)*bigS)/sqMU;
-	
-	//float res = (t - (pow(x, 3.0) * bigS / sqMU));
-	//res does not return the correct results as long as the results are positive. Once it's negative, it fits.
-	//res2 is correct (4.4-32)
-	double res2 = ( pow(x,2.0) * (r0.dot(v0) / sqMU) * bigC + r0.length()*x*(1.0-z*bigS) ) / sqMU;
-	//if (abs(res - res2) > 0.00001) {
-		//cout << "Small G differences: " << res - res2 << endl;
-	//	cout << "good g: " << res2 << "; bad g: " << res << endl;
-	//}
-	//if ((int)floor(t) % 1 == 0) {
-		//cout << "x: " << x << "; r0.v0: " << r0.dot(v0) << "; mu: " << mu << "; C: " << bigC << "; S: " << bigS << "; r0l: " << r0.length() << "; z: " << z << "; t: " << t << ";44-34: "<< res << "; 44-32: " << res2 << endl;
-	//}
-	return res2;
+	return (pow(x, 2.0) * (r0.dot(v0) / sqMU) * bigC + r0.length()*x*(1.0 - z * bigS)) / sqMU;
 }
 
 //4.4-35
@@ -330,6 +314,9 @@ void Satellite::update(double deltaT)
 	try
 	{
 		totalTime += (deltaT*(double)speedUp);
+		if (totalTime > ephemeris.getEllipseOrbitalPeriod()) {
+			totalTime = totalTime - ephemeris.getEllipseOrbitalPeriod();
+		}
 		calcKeplerProblem(totalTime);
 		Matrix f = Matrix();
 		f.translation(r);
@@ -371,8 +358,28 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	this->totalTime = 0.0;
 
 	//Just for testing:
-	cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getEllipseOrbitalPeriod() << endl;
-	cout << "Points for vis: " << resVec.size() << endl;
+	//cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getEllipseOrbitalPeriod() << endl;
+	//cout << "Points for vis: " << resVec.size() << endl;
 	return (resVec);
 }
 
+//Stumpff function for testing purposes mostly
+/*
+double stumpff(double x, unsigned int order) {
+	double total = 0.0;
+	for (unsigned int i = 0; i < 5; i++) {
+		double upper = pow(-1.0, i) * pow(x, i);
+		double lower = factorial(order + 2 * i);
+		double res = upper / lower;
+		if (isnan(res)) {
+			break;
+		}
+		double s = total;
+		total += res;
+		if (isnan(total)) {
+			total = s;
+			break;
+		}
+	}
+	return total;
+}*/

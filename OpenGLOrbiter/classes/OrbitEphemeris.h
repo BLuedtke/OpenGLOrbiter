@@ -20,13 +20,16 @@ public:
 	Vector getR0();
 	Vector getV0();
 	Matrix getPQWMatrix();
+	double getAlphaValue();
 private:
 	double semiLatRect = 0.0;
+	double alpha = 0.0;
 	Vector r0;
 	Vector v0;
 	Matrix pqw;
 	bool doR0V0exist = false;
 	bool pqwExists = false;
+	bool alphaExists = false;
 	void calcPQWMatrix();
 	void calcR0V0();
 };

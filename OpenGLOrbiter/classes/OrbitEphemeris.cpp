@@ -126,3 +126,15 @@ Matrix OrbitEphemeris::getPQWMatrix()
 		return pqw;
 	}
 }
+
+double OrbitEphemeris::getAlphaValue()
+{
+	if (alphaExists) {
+		return alpha;
+	}
+	if (!doR0V0exist) {
+		this->calcR0V0();
+	}
+	double upper = (2.0 * mu / (float)r0.length() - v0.lengthSquared());
+	return (upper/mu);
+}

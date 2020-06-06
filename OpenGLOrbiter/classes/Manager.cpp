@@ -58,7 +58,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	//Sample with all parameters. This height corresponds to GEO.
 	//addSatellite(42164.0f  , 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
 	
-	/**/
+	
 	// THIS IS THE GPS 'CONSTELLATION'
 	addSatellite(26550.0f, 302.8080f, 56.01f, 279.2863f, 0.0186085f, 0);
 	addSatellite(26550.0f, 302.6010f, 56.06f, 35.3566f, 0.0113652f, 0);
@@ -98,7 +98,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	
 	// Random Satellite
 	//addSatellite(28164.0f, 0.0f, 19.0f, 0.0f, 0.0f);
-	addSatellite(9164.0f, 0.0f, 19.0f, 0.0f, 0.1f);
+	//addSatellite(9164.0f, 0.0f, 19.0f, 0.0f, 0.1f);
 
 	/**/
 	addEquatorLinePlane();
@@ -144,6 +144,7 @@ void Manager::speedUpSats(float speedUp)
 	{
 		satellites[i]->speedUp = speedUp;
 	}
+	timeScale = speedUp;
 }
 
 void Manager::addEquatorLinePlane()
@@ -164,7 +165,7 @@ void Manager::addEarth()
 
 	unique_ptr<TriangleSphereModel> uModel = std::make_unique<TriangleSphereModel>(1.0f);
 	std::unique_ptr<PhongShader> uShader = std::make_unique<PhongShader>();
-	uShader->diffuseTexture(Texture::LoadShared("earth.jpg"));
+	uShader->diffuseTexture(Texture::LoadShared("earth4.jpg"));
 	uShader->ambientColor(Color(0.5f, 0.5f, 0.5f));
 
 	uModel->transform(baseTransform);
@@ -184,19 +185,20 @@ void Manager::start()
 
 void Manager::update(double deltaT)
 {
-	if (deltaT < 0.5) {
-		for (unsigned int i = 0; i < satellites.size(); i++)
-		{
-			satellites[i]->update(deltaT);
-		}
+	
+	for (unsigned int i = 0; i < satellites.size(); i++)
+	{
+		satellites[i]->update(deltaT);
 	}
-	else {
-		cout << "Very long frame: " << deltaT << endl;
+	const double coeff = ((deltaT*timeScale) / 86400.0);
+	for (unsigned int k = 0; k < planets.size(); k++) {
+		Matrix t = planets[k]->transform();
+		Matrix r = Matrix().rotationY(coeff);
+		planets[k]->transform(t * r);
 	}
-
 	
 	//TODO add planet updates
-
+	
 	Cam.update();
 }
 
