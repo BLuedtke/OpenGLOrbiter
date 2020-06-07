@@ -3,6 +3,8 @@
 #include "Satellite.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <chrono>
+
 #define DEG_TO_RAD(x) ((x)*0.0174532925f)
 #define RAD_TO_DEG(x) ((x)*57.2957795f)
 
@@ -84,19 +86,20 @@ This problem classically involves the solution of Kepler's Equation and is often
 	v	Speed Vector
 	... at given time t
 */
-void Satellite::calcKeplerProblem(double timePassed)
+void Satellite::calcKeplerProblem(double timePassed, double t0)
 {
 	try
 	{
 		//Compute first guesses and then use Newton Iteration to find x.
-		double xn = computeXfirstGuess(timePassed);
+		double diffTime = timePassed - t0;
+		double xn = computeXfirstGuess(diffTime);
 		double zn = computeZ(xn);
 		double tn = computeTnByXn(xn, zn); //NAN if eccentricity = 1
-		double x = xnNewtonIteration(xn, timePassed, tn, zn);
+		double x = xnNewtonIteration(xn, diffTime, tn, zn);
 		
 		//Evaluate f and g from equations (4.4-31) and (4.4-32);then compute r and r.length from equation (4.4-18)
 		double f = computeSmallF(x);
-		double g = computeSmallG(x, timePassed);
+		double g = computeSmallG(x, diffTime);
 		//Now compute r by 4.4-18
 		Vector rN = computeRVec(f, g);
 		
@@ -110,7 +113,9 @@ void Satellite::calcKeplerProblem(double timePassed)
 		
 		// Now compute v from 4.4-19
 		v = computeVVec(fD, gD);
-		
+		if (t0 > 0.0) {
+			this->ephemeris.updateR0V0(rN, v);
+		}
 		r = rN * (sizeFactor);
 		v = v * (sizeFactor);
 	}
@@ -272,16 +277,21 @@ double Satellite::computeSmallF(double x)
 }
 
 //4.4-34 / (4.4-32)
-//Testing showed that using equation 4.4-34 produced high error for trueAnomaly < Pi (so the first half of the orbit).
-// 4.4-32 (which is being used here) does produce correct results. So far, I've not been able to really determine why that is the case.
+//Testing showed that using equation 4.4-34 produced high error for trueAnomaly < Pi (so the first half of the orbit), if t0 stays 0 and is not updated.
+// 4.4-32 (which is being used here) does produce correct results even if t0 (and r0, v0) are not updated. 
+// However, updating t0, r0 and v0 is absolutely trivial, and allows usage of 4.4-34, which should be less expensive in terms of operations needed.
 double Satellite::computeSmallG(double x, double t)
 {
 	Vector r0 = this->ephemeris.getR0();
 	Vector v0 = this->ephemeris.getV0();
 	double z = computeZ(x);
 	double bigS = computeSseries(z);
-	double bigC = computeCseries(z);
-	return (pow(x, 2.0) * (r0.dot(v0) / sqMU) * bigC + r0.length()*x*(1.0 - z * bigS)) / sqMU;
+	//double bigC = computeCseries(z);
+	double gSmall = t - pow(x, 3.0) / sqMU * bigS;
+	//double proper = (pow(x, 2.0) * (r0.dot(v0) / sqMU) * bigC + r0.length()*x*(1.0 - z * bigS)) / sqMU;
+	//cout << "4.4-32: " << proper << "; 4.4-34: " << gSmall << endl;
+	return gSmall;
+	//return proper;
 }
 
 //4.4-35
@@ -313,11 +323,13 @@ void Satellite::update(double deltaT)
 {
 	try
 	{
-		totalTime += (deltaT*(double)speedUp);
 		if (totalTime > ephemeris.getEllipseOrbitalPeriod()) {
+			//This is done first to keep the difference between new t and t0 stable
 			totalTime = totalTime - ephemeris.getEllipseOrbitalPeriod();
 		}
-		calcKeplerProblem(totalTime);
+		double t0 = totalTime;
+		totalTime += (deltaT*(double)speedUp);
+		calcKeplerProblem(totalTime, t0);
 		Matrix f = Matrix();
 		f.translation(r);
 		uTransform = f;
@@ -329,6 +341,15 @@ void Satellite::update(double deltaT)
 }
 
 
+using time_point = std::chrono::time_point<std::chrono::steady_clock>;
+double timeInMilliSeconds(time_point start, time_point end) {
+	using std::chrono::duration_cast;
+	auto nano = duration_cast<std::chrono::nanoseconds>(end - start).count();
+	auto mikro = duration_cast<std::chrono::microseconds>(end - start).count();
+	auto milli = duration_cast<std::chrono::milliseconds>(end - start).count();
+	double t = (double)milli + ((double)mikro / 1000.0) + ((double)nano / 1e+6);
+	return t;
+}
 //Method for going through the orbit and calculating a collection of points along the orbit
 // This can be used to represent the trajectory with lines (used for OrbitLineModel).
 std::vector<Vector> Satellite::calcOrbitVis()
@@ -342,9 +363,15 @@ std::vector<Vector> Satellite::calcOrbitVis()
 
 	int runner = 0;
 	double stepper = 80;
+	time_point t1;
+	time_point t2;
+	double totalTimeMilli = 0.0;
 	while (runner < 10000) {
 		this->totalTime += stepper;
-		this->calcKeplerProblem(this->totalTime);
+		//t1 = std::chrono::high_resolution_clock::now();
+		this->calcKeplerProblem(this->totalTime, this->totalTime-stepper);
+		//t2 = std::chrono::high_resolution_clock::now();
+		//totalTimeMilli += timeInMilliSeconds(t1, t2);
 		if (r.lengthSquared() > 0.000001f) {
 			resVec.push_back(r);
 		}
@@ -356,7 +383,8 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	}
 	this->ephemeris.trueAnomaly = startAngle;
 	this->totalTime = 0.0;
-
+	//cout << "Total time taken for all calcKepler: " << totalTimeMilli << endl;
+	//cout << "Avg: " << (totalTimeMilli / (double)runner) << endl;
 	//Just for testing:
 	//cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getEllipseOrbitalPeriod() << endl;
 	//cout << "Points for vis: " << resVec.size() << endl;

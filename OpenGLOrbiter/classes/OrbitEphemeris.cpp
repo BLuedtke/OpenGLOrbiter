@@ -97,6 +97,13 @@ Vector OrbitEphemeris::getV0()
 	}
 }
 
+void OrbitEphemeris::updateR0V0(Vector nextR0, Vector nextV0)
+{
+	this->r0 = nextR0;
+	this->v0 = nextV0;
+	doR0V0exist = true;
+}
+
 
 void OrbitEphemeris::calcPQWMatrix()
 {

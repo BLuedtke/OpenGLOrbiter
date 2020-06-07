@@ -16,7 +16,7 @@ public:
 	std::vector<Vector> calcOrbitVis();
 	void update(double dtime);
 	float speedUp = 1.0f;
-	void calcKeplerProblem(double timePassed);
+	void calcKeplerProblem(double timePassed, double t0 = 0.0);
 
 private:
 	Vector v;

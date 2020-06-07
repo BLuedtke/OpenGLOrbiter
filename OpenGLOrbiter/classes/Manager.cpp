@@ -42,24 +42,19 @@ using std::endl;
 using std::cout;
 
 
-using time_point = std::chrono::time_point<std::chrono::steady_clock>;
-void chronoOut(time_point start, time_point end) {
-	using std::chrono::duration_cast;
-	auto nano = duration_cast<std::chrono::nanoseconds>(end - start).count();
-	auto mikro = duration_cast<std::chrono::microseconds>(end - start).count();
-	auto milli = duration_cast<std::chrono::milliseconds>(end - start).count();
-	auto secs = duration_cast<std::chrono::seconds>(end - start).count();
-	cout << "seconds:milli:micro:nano = " << secs << ":" << milli << ":" << mikro << ":" << nano << endl;
-}
 
 Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
+	//THIS SPEEDS UP EVERYTHING BY THE FACTOR passed in the parameter
+	speedUpSats(100.f);
+	//-> Using this to slow things down might cause numerical instability!
+
 	addEarth();
 	//Sample with all parameters. This height corresponds to GEO.
-	//addSatellite(42164.0f  , 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
+	addSatellite(42164.0f  , 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
 	
-	
-	// THIS IS THE GPS 'CONSTELLATION'
+	/**/
+	// THIS IS THE GPS 'CONSTELLATION' -> with realistic orbital elements.
 	addSatellite(26550.0f, 302.8080f, 56.01f, 279.2863f, 0.0186085f, 0);
 	addSatellite(26550.0f, 302.6010f, 56.06f, 35.3566f, 0.0113652f, 0);
 	addSatellite(26550.0f, 301.5764f, 56.01f, 65.4874f, 0.0078611f, 0);
@@ -86,29 +81,22 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	addSatellite(26550.0f, 57.9073f, 56.16f, 44.0277f, 0.0097490f, 0);
 	addSatellite(26550.0f, 57.4396f, 56.13f, 296.4550f, 0.0021052f, 0);
 	addSatellite(26550.0f,   3.4232f, 56.27f, 93.3527f,	0.0092063f, 0);
-	addSatellite(26550.0f,   0.7710f, 56.37f, 266.0448f,	0.0134264f, 0);
-	addSatellite(26550.0f,   1.4579f, 56.47f, 114.9660f,	0.0012895f, 0);
+	addSatellite(26550.0f,   0.7710f, 56.37f, 266.0448f, 0.0134264f, 0);
+	addSatellite(26550.0f,   1.4579f, 56.47f, 114.9660f, 0.0012895f, 0);
 	addSatellite(26550.0f, 357.4799f, 56.04f, 30.9207f, 0.0081731f, 0);
 	addSatellite(26550.0f, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
 	/**/
-	//addSatellite(26550.0f, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
 
 
-	
-	
 	// Random Satellite
-	//addSatellite(28164.0f, 0.0f, 19.0f, 0.0f, 0.0f);
-	//addSatellite(9164.0f, 0.0f, 19.0f, 0.0f, 0.1f);
+	//addSatellite(28164.0f, 0.0f, 19.0f, 0.0f, 0.6f);
+	//addSatellite(9164.0f, 0.0f, 90.0f, 0.0f, 0.2f);
 
 	/**/
 	addEquatorLinePlane();
-
-	//THIS SPEEDS UP EVERYTHING BY THE FACTOR passed in the parameter
-	speedUpSats(1.f);
-	//-> Using this to slow things down might cause numerical instability!
 }
 
-//Passing fullLine=false is experimental and lead to numerical instability. More robust orbit visualization techniques are being thought of.
+//Passing fullLine=false is experimental and may lead to numerical instability. More robust orbit visualization techniques are being thought of.
 void Manager::addSatellite(double semiA, double lAscN, double incli, double argP, double ecc, double trueAnom, bool orbitVis, bool fullLine )
 {
 	OrbitEphemeris o = OrbitEphemeris();
@@ -135,6 +123,7 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 		uModel->setShader(std::move(uCShader));
 		uModels.push_back(std::move(uModel));
 	}
+	sat->speedUp = timeScale;
 	this->satellites.push_back(std::move(sat));
 }
 
@@ -165,7 +154,13 @@ void Manager::addEarth()
 
 	unique_ptr<TriangleSphereModel> uModel = std::make_unique<TriangleSphereModel>(1.0f);
 	std::unique_ptr<PhongShader> uShader = std::make_unique<PhongShader>();
-	uShader->diffuseTexture(Texture::LoadShared("earth4.jpg"));
+	//In Debug mode, loading the large earth texture takes VERY long -> load simpler texture
+#ifdef _DEBUG
+	uShader->diffuseTexture(Texture::LoadShared("earth.jpg"));
+#else
+	uShader->diffuseTexture(Texture::LoadShared("earth5.jpg"));
+#endif // DEBUG
+
 	uShader->ambientColor(Color(0.5f, 0.5f, 0.5f));
 
 	uModel->transform(baseTransform);
@@ -190,15 +185,13 @@ void Manager::update(double deltaT)
 	{
 		satellites[i]->update(deltaT);
 	}
+	//For earth rotation
 	const double coeff = ((deltaT*timeScale) / 86400.0);
 	for (unsigned int k = 0; k < planets.size(); k++) {
 		Matrix t = planets[k]->transform();
 		Matrix r = Matrix().rotationY(coeff);
 		planets[k]->transform(t * r);
 	}
-	
-	//TODO add planet updates
-	
 	Cam.update();
 }
 
