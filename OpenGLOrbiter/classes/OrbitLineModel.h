@@ -19,7 +19,7 @@ public:
 	std::vector<Vector> points;
 protected:
 	VertexBuffer VB;
-	void evaluatePoints(bool fullLine,Color c = Color(0,1,0));
+	void evaluatePoints(bool fullLine,Color c = Color(0.0f,0.6f,0.0f));
 };
 
 #endif /* OrbitLineModel_hpp */

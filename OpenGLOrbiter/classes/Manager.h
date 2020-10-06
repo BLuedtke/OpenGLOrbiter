@@ -35,8 +35,7 @@ protected:
 	
 	void addEarth();
 	void addSatellite(double semiA, double lAscN, double incli, double argP, double ecc = 0.0f, double trueAnom = 0.0, bool orbitVis = true, bool fullLine = true);
-	void addSatellite(OrbitEphemeris o, bool orbitVis = true, bool fullLine = true, Color satColor = Color(.3f,.3f,.8f));
-	void speedUpSats(float speedUp);
+	void addSatellite(OrbitEphemeris o, bool orbitVis = true, bool fullLine = true, Color satColor = Color(1.0f,.2f,.2f));
 	void addEquatorLinePlane();
 };
 

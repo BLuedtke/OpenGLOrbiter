@@ -15,8 +15,8 @@ public:
 	~Satellite();
 	std::vector<Vector> calcOrbitVis();
 	void update(double dtime);
-	float speedUp = 1.0f;
 	void calcKeplerProblem(double timePassed, double t0 = 0.0);
+	void saveCurrentR0Length();
 
 private:
 	Vector v;
@@ -25,13 +25,16 @@ private:
 
 	double totalTime = 0.0;
 
+	//counts completed orbits
+	unsigned int orbits = 0;
+	float r0LengthSaved = 0.f;
+	float lastOrbitR0Length = 0.f;
 
 	double computeXfirstGuess(double t);
 	double computeZ(double x);
 
 	double xnNewtonIteration(double xn, double t, double tn, double xf);
 	double computeNewDtDx(double xn);
-	double computeNewDtDxWithMU(double xn);
 	double computeTnByXn(double x, double z);
 	
 	double computeSmallF(double x);

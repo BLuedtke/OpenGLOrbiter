@@ -33,8 +33,8 @@
 #endif
 #define sizeF 1.0f/6378.0f
 
-#define DEG_TO_RAD(x) ((x)*0.0174532925f)
-#define RAD_TO_DEG(x) ((x)*57.2957795f)
+#define DEG_TO_RAD(x) ((x)*0.0174532925)
+#define RAD_TO_DEG(x) ((x)*57.2957795)
 
 using std::vector;
 using std::unique_ptr;
@@ -45,16 +45,22 @@ using std::cout;
 
 Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
-	//THIS SPEEDS UP EVERYTHING BY THE FACTOR passed in the parameter
-	speedUpSats(100.f);
+	//800x quicker than reality
+	timeScale = 800.f;
 	//-> Using this to slow things down might cause numerical instability!
 
 	addEarth();
-	//Sample with all parameters. This height corresponds to GEO.
-	addSatellite(42164.0f  , 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
 	
-	/**/
+	
+	//Sample with all parameters. This height corresponds to GEO.
+	//addSatellite(42164.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, true);
+	
+	//addSatellite(20550.0, 300., 50., 280., 0.0, 0);
+	addSatellite(10550.0, 300., 50., 280., 0.0, 0);
+	
+	/*
 	// THIS IS THE GPS 'CONSTELLATION' -> with realistic orbital elements.
+	//TODO Switch the parameters to doubles.
 	addSatellite(26550.0f, 302.8080f, 56.01f, 279.2863f, 0.0186085f, 0);
 	addSatellite(26550.0f, 302.6010f, 56.06f, 35.3566f, 0.0113652f, 0);
 	addSatellite(26550.0f, 301.5764f, 56.01f, 65.4874f, 0.0078611f, 0);
@@ -87,15 +93,15 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	addSatellite(26550.0f, 356.6780f, 55.09f, 353.3877f, 0.0053773f, 0);
 	/**/
 
-
 	// Random Satellite
 	//addSatellite(28164.0f, 0.0f, 19.0f, 0.0f, 0.6f);
 	//addSatellite(9164.0f, 0.0f, 90.0f, 0.0f, 0.2f);
 
 	/**/
-	addEquatorLinePlane();
+	//addEquatorLinePlane();
 }
 
+//addSat Params: semi Major Axis, longitude of ascending node, inclination, argument of periapsis, eccentricity, true Anomaly, orbitVisualisation, fullLine
 //Passing fullLine=false is experimental and may lead to numerical instability. More robust orbit visualization techniques are being thought of.
 void Manager::addSatellite(double semiA, double lAscN, double incli, double argP, double ecc, double trueAnom, bool orbitVis, bool fullLine )
 {
@@ -118,22 +124,12 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 	sat->setShader(std::move(uShader));
 	if (orbitVis == true) {
 		std::vector<Vector> resOrbit = sat->calcOrbitVis();
-		unique_ptr<FlatColorShader> uCShader = std::make_unique<FlatColorShader>(Color(0, 1, 0));
+		unique_ptr<FlatColorShader> uCShader = std::make_unique<FlatColorShader>(Color(0, 0.4f, 0));
 		unique_ptr<StandardModel> uModel = std::make_unique<OrbitLineModel>(resOrbit,fullLine);
 		uModel->setShader(std::move(uCShader));
 		uModels.push_back(std::move(uModel));
 	}
-	sat->speedUp = timeScale;
 	this->satellites.push_back(std::move(sat));
-}
-
-void Manager::speedUpSats(float speedUp)
-{
-	for (unsigned int i = 0; i < this->satellites.size(); i++)
-	{
-		satellites[i]->speedUp = speedUp;
-	}
-	timeScale = speedUp;
 }
 
 void Manager::addEquatorLinePlane()
@@ -162,10 +158,8 @@ void Manager::addEarth()
 #endif // DEBUG
 
 	uShader->ambientColor(Color(0.5f, 0.5f, 0.5f));
-
 	uModel->transform(baseTransform);
 	uModel->setShader(std::move(uShader));
-	//This uses the planets std::vector for preparing to let earth rotate -> will be implemented sometime soon (tm)
 	planets.push_back(std::move(uModel));
 }
 
@@ -180,13 +174,13 @@ void Manager::start()
 
 void Manager::update(double deltaT)
 {
-	
+	deltaT *= timeScale;
 	for (unsigned int i = 0; i < satellites.size(); i++)
 	{
 		satellites[i]->update(deltaT);
 	}
-	//For earth rotation
-	const double coeff = ((deltaT*timeScale) / 86400.0);
+	//For earth rotation. 
+	const double coeff = (deltaT / 86400.0)*DEG_TO_RAD(360);
 	for (unsigned int k = 0; k < planets.size(); k++) {
 		Matrix t = planets[k]->transform();
 		Matrix r = Matrix().rotationY(coeff);

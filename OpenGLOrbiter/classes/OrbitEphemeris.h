@@ -14,24 +14,19 @@ public:
 	double argPeriaps;	// w (small Omega)
 	double trueAnomaly;  // T
 	
-	double getOrCreateSemLatRect();
-	double getEllipseOrbitalPeriod();
-
+	double getEllipseOrbitalPeriod(bool forceReCalc=false);
 	Vector getR0();
 	Vector getV0();
 	void updateR0V0(Vector nextR0, Vector nextV0);
-	Matrix getPQWMatrix();
-	double getAlphaValue();
+
 private:
-	double semiLatRect = 0.0;
-	double alpha = 0.0;
+	
+	double orbitalperiod = 0.0;
 	Vector r0;
 	Vector v0;
 	Matrix pqw;
+	Matrix calcPQWMatrix();
 	bool doR0V0exist = false;
-	bool pqwExists = false;
-	bool alphaExists = false;
-	void calcPQWMatrix();
 	void calcR0V0();
 };
 

@@ -5,17 +5,12 @@
 #include <math.h>
 #include <chrono>
 
-#define DEG_TO_RAD(x) ((x)*0.0174532925f)
-#define RAD_TO_DEG(x) ((x)*57.2957795f)
+#define DEG_TO_RAD(x) ((x)*0.0174532925)
+#define RAD_TO_DEG(x) ((x)*57.2957795)
 
-#define sizeFactor 1.0f/6378.0f
-// This mu was determined by trial-and-error, measured by approximating the flight time of the ISS orbit
-// (adjusted so that with speedUp 1.0f, ISS orbit flighttime is about the same as in real life (roughly).
-// In reality, there are more factors influencing this, and it does not scale down the same as the size.
+#define sizeFactor (1.0f/6378.0f)
+
 // If you want to change it, change it in the OrbitalEphemeris.cpp as well.
-#ifndef muS
-#define muS 0.0000015399
-#endif // !muS
 #ifndef mu
 // This uses the unit km³/s², NOT m³/s²!!
 #define mu (double)398600
@@ -79,7 +74,7 @@ This problem classically involves the solution of Kepler's Equation and is often
 	We have, hopefully:
 	r0	Vector r (position) at t0;
 	v0	Vector v (speed) at t0;
-	t0	Time at start, assumed to be 0
+	t0	Time of last determination of r0 and v0
 
 	We want to find:
 	r	Position Vector
@@ -93,11 +88,12 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 		//Compute first guesses and then use Newton Iteration to find x.
 		double diffTime = timePassed - t0;
 		double xn = computeXfirstGuess(diffTime);
+		
 		double zn = computeZ(xn);
 		double tn = computeTnByXn(xn, zn); //NAN if eccentricity = 1
 		double x = xnNewtonIteration(xn, diffTime, tn, zn);
 		
-		//Evaluate f and g from equations (4.4-31) and (4.4-32);then compute r and r.length from equation (4.4-18)
+		//Evaluate f and g from equations (4.4-31) and (4.4-32)
 		double f = computeSmallF(x);
 		double g = computeSmallG(x, diffTime);
 		//Now compute r by 4.4-18
@@ -108,16 +104,20 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 		double gD = computeSmallGDerivative(x, rN.length());
 		
 		//check for accuracy of f, g, fD, gD
-		//double test = f * gD - fD * g;
-		//cout << "4.4-20 Check, should be near 1: " << test << endl;
+		double test = f * gD - fD * g;
+		if (abs(test) > 1.0000000001) {
+			//The larger the difference to 1, the higher the error of the determined position
+			cout << "should be near 1: " << abs(test) << endl;
+		}
 		
 		// Now compute v from 4.4-19
-		v = computeVVec(fD, gD);
+		Vector vN = computeVVec(fD, gD);
 		if (t0 > 0.0) {
-			this->ephemeris.updateR0V0(rN, v);
+			this->ephemeris.updateR0V0(rN, vN);
 		}
+		//All calculations are performed in "real" scale (1 unit = 1km), but the coordinate system is not to scale (1 unit = 6378.0km), so scale the vectors down
 		r = rN * (sizeFactor);
-		v = v * (sizeFactor);
+		v = vN * (sizeFactor);
 	}
 	catch (const std::exception& e)
 	{
@@ -125,16 +125,22 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 	}
 }
 
+//For Debugging
+void Satellite::saveCurrentR0Length()
+{
+	this->r0LengthSaved = this->ephemeris.getR0().length();
+}
+
 //4.4-7
+//The Semi Major Axis in the OrbitalEphemeris object has to be != 0 for this to work
 double Satellite::computeZ(double x)
 {
-	double a = this->ephemeris.semiMajorA;
-	if (a != 0.0) {
-		return pow(x, 2.0) / a;
+	if (this->ephemeris.semiMajorA != 0.0) {
+		return pow(x, 2.0) / this->ephemeris.semiMajorA;
 	}
 	else
 	{
-		cout << "ERROR: computeZ a was 0 -> Division by 0!" << endl;
+		cout << "ERROR in computeZ (Satellite CPP): Semi Major Axis was 0 -> Division by 0." << endl;
 	}
 	return 0.0;
 }
@@ -143,6 +149,7 @@ double Satellite::computeZ(double x)
 double Satellite::computeCseries(double z)
 {
 	double cz = 0.0;
+	//Easy Calculation if z != 0 (albeit different depending on sign)
 	if (z > 0.0000000000001) {
 		cz = (1.0 - cos(std::sqrt(z))) / z;
 	}
@@ -168,6 +175,7 @@ double Satellite::computeCseries(double z)
 double Satellite::computeSseries(double z)
 {
 	double sz = 0.0;
+	//Easy Calculation if z != 0 (albeit different depending on sign)
 	if (z > 0.000000000001) {
 		double sqZ = std::sqrt(z);
 		sz = (sqZ - sin(sqZ)) / std::sqrt(pow(z, 3.0));
@@ -192,9 +200,9 @@ double Satellite::computeSseries(double z)
 }
 
 //4.4-14
+// To be used with a trial value for x during the newton iteration
 double Satellite::computeTnByXn(double xn, double zn)
 {
-	// To be used with a trial Value for x
 	double bigC = computeCseries(zn);
 	double bigS = computeSseries(zn);
 	Vector r0 = this->ephemeris.getR0();
@@ -214,13 +222,13 @@ double Satellite::xnNewtonIteration(double xn, double t, double tn, double zn)
 	double xNext = xn;
 	double timeN = tn;
 	double zNext = zn;
-	//We may also need to check if anything becomes NAN during the iteration
+	//TODO: Implement NaN checks for calculated values during iteration
 	for (unsigned int i = 0; i < 200; i++) {
 		double dtdx = computeNewDtDx(xNext);
 		xNext = xNext + ((t - timeN) / dtdx);
 		zNext = computeZ(xNext);
 		timeN = computeTnByXn(xNext, zNext);
-		if ((t - timeN) < 0.000001) {
+		if ((t - timeN) < 0.0000001) {
 			//cout << "Approximated time: " << timeN << endl;
 			break;
 		}
@@ -228,14 +236,8 @@ double Satellite::xnNewtonIteration(double xn, double t, double tn, double zn)
 	return xNext;
 }
 
-//4.4-17 with MU removed
+//4.4-17 with additional division by sqMU -> Required for Newton iteration process only
 double Satellite::computeNewDtDx(double xn)
-{
-	return (computeNewDtDxWithMU(xn) / sqMU);
-}
-
-//4.4-17 basically = rLength
-double Satellite::computeNewDtDxWithMU(double xn)
 {
 	Vector r0 = this->ephemeris.getR0();
 	Vector v0 = this->ephemeris.getV0();
@@ -247,7 +249,7 @@ double Satellite::computeNewDtDxWithMU(double xn)
 	double term2 = (r0.dot(v0) / sqMU) * xn * (1.0 - zn * bigS);
 	double term3 = r0.length() * (1.0 - zn * bigC);
 
-	return (term1 + term2 + term3);
+	return (term1 + term2 + term3)/sqMU;
 }
 
 //4.4-18
@@ -255,7 +257,8 @@ Vector Satellite::computeRVec(double f, double g)
 {
 	Vector r0 = this->ephemeris.getR0();
 	Vector v0 = this->ephemeris.getV0();
-	Vector rN = (r0 * (float)f + v0 * (float)g); // The Vector class doesnt use doubles (yet)
+	//TODO Remove the (float) once switched to vectors that use doubles
+	Vector rN = (r0 * (float)f + v0 * (float)g);
 	return rN;
 }
 
@@ -264,6 +267,7 @@ Vector Satellite::computeVVec(double fD, double gD)
 {
 	Vector r0 = this->ephemeris.getR0();
 	Vector v0 = this->ephemeris.getV0();
+	//TODO Remove the (float) once switched to vectors that use doubles
 	return r0 * (float)fD + v0 * (float)gD;
 }
 
@@ -276,22 +280,18 @@ double Satellite::computeSmallF(double x)
 	return (1.0 - (pow(x, 2.0) / r0Length) * bigC);
 }
 
-//4.4-34 / (4.4-32)
-//Testing showed that using equation 4.4-34 produced high error for trueAnomaly < Pi (so the first half of the orbit), if t0 stays 0 and is not updated.
-// 4.4-32 (which is being used here) does produce correct results even if t0 (and r0, v0) are not updated. 
-// However, updating t0, r0 and v0 is absolutely trivial, and allows usage of 4.4-34, which should be less expensive in terms of operations needed.
+//4.4-32
+//Testing showed that using equation 4.4-34 produced high error when the time delta t since the last calculation is larger than a few seconds
+// 4.4-32 (which is being used here) does produce correct results even if t is larger than a few seconds
 double Satellite::computeSmallG(double x, double t)
 {
 	Vector r0 = this->ephemeris.getR0();
 	Vector v0 = this->ephemeris.getV0();
 	double z = computeZ(x);
 	double bigS = computeSseries(z);
-	//double bigC = computeCseries(z);
-	double gSmall = t - pow(x, 3.0) / sqMU * bigS;
-	//double proper = (pow(x, 2.0) * (r0.dot(v0) / sqMU) * bigC + r0.length()*x*(1.0 - z * bigS)) / sqMU;
-	//cout << "4.4-32: " << proper << "; 4.4-34: " << gSmall << endl;
+	double bigC = computeCseries(z);
+	double gSmall = (pow(x, 2.0) * (r0.dot(v0) / sqMU) * bigC + r0.length()*x*(1.0 - z * bigS)) / sqMU;
 	return gSmall;
-	//return proper;
 }
 
 //4.4-35
@@ -299,7 +299,7 @@ double Satellite::computeSmallGDerivative(double x, double rLength)
 {
 	double z = computeZ(x);
 	double bigC = computeCseries(z);
-	return 1.0f - (pow(x, 2.0) / rLength) * bigC;
+	return 1.0 - (pow(x, 2.0) / rLength) * bigC;
 }
 
 //4.4-36
@@ -312,6 +312,7 @@ double Satellite::computeSmallFDerivative(double x, double rLength)
 }
 
 //4.5-10
+//First guess to start the newton iteration process with, recommended by the book.
 double Satellite::computeXfirstGuess(double t)
 {
 	return (sqMU * t) / this->ephemeris.semiMajorA;
@@ -323,12 +324,22 @@ void Satellite::update(double deltaT)
 {
 	try
 	{
+		//TODO Rewrite Update Process to switch to consistent physic timesteps + interpolation instead of calculating at every frame
 		if (totalTime > ephemeris.getEllipseOrbitalPeriod()) {
-			//This is done first to keep the difference between new t and t0 stable
+			orbits++;
+			float currentR0Length = this->ephemeris.getR0().length();
+			cout << orbits << " Orbits completed. R Length: " << currentR0Length << "; R-L last orbit: " << lastOrbitR0Length << "; Diff: " << lastOrbitR0Length - currentR0Length << endl;
+			this->lastOrbitR0Length = currentR0Length;
+			//Debugging Rounding Errors stuff with a satellite with eccentricity 0 -> Will absolutely fail with other sats
+			this->ephemeris.semiMajorA = currentR0Length;
+			//Still debugging -> Force recalculation of expected orbital period with adjusted SemiMajorAxis, to collect data on the rounding error per orbit
+			double newPeriod = ephemeris.getEllipseOrbitalPeriod(true);
+			cout << "next expected orbital period: " << newPeriod << endl;
+			//This is done to keep the value for totalTime in a reasonable range. Should replace this with a simpler/more intuitive overflow check
 			totalTime = totalTime - ephemeris.getEllipseOrbitalPeriod();
 		}
 		double t0 = totalTime;
-		totalTime += (deltaT*(double)speedUp);
+		totalTime += deltaT;
 		calcKeplerProblem(totalTime, t0);
 		Matrix f = Matrix();
 		f.translation(r);
@@ -350,23 +361,29 @@ double timeInMilliSeconds(time_point start, time_point end) {
 	double t = (double)milli + ((double)mikro / 1000.0) + ((double)nano / 1e+6);
 	return t;
 }
+
 //Method for going through the orbit and calculating a collection of points along the orbit
-// This can be used to represent the trajectory with lines (used for OrbitLineModel).
+// This can be used to represent the trajectory with lines (i.e. used for OrbitLineModel).
 std::vector<Vector> Satellite::calcOrbitVis()
 {
 	std::vector<Vector> resVec;
 	double startAngle = this->ephemeris.trueAnomaly;
 	this->ephemeris.trueAnomaly = 0.0f;
 
-	//This is only valid for an ellipse -> Everything probably needs to be slightly rewritten for parabolas.
-	double orbPeriod = this->ephemeris.getEllipseOrbitalPeriod();
-
-	int runner = 0;
-	double stepper = 80;
-	time_point t1;
-	time_point t2;
+	//Debugging/Time Measurement
+	time_point t1, t2;
 	double totalTimeMilli = 0.0;
-	while (runner < 10000) {
+	
+	int runner = 0;
+	double stepper = 120;
+	int maxSteps = 10000;
+	//Required for orbits with periods >~333 hours
+	if (stepper * 10000 < this->ephemeris.getEllipseOrbitalPeriod()) {
+		maxSteps = (int)(this->ephemeris.getEllipseOrbitalPeriod() / 120)+1;
+		cout << "calcOrbitVis Changing max Steps to " << maxSteps << endl;
+	}
+	
+	while (runner < maxSteps) {
 		this->totalTime += stepper;
 		//t1 = std::chrono::high_resolution_clock::now();
 		this->calcKeplerProblem(this->totalTime, this->totalTime-stepper);
@@ -376,7 +393,7 @@ std::vector<Vector> Satellite::calcOrbitVis()
 			resVec.push_back(r);
 		}
 		runner++;
-		if (this->totalTime-stepper > orbPeriod) {
+		if (this->totalTime-stepper > this->ephemeris.getEllipseOrbitalPeriod()) {
 			//Stop point generation after one orbit
 			break;
 		}
