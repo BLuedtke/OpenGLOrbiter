@@ -32,7 +32,7 @@
 #define ASSET_DIRECTORY "../assets/"
 #endif
 #define sizeF 1.0f/6378.0f
-
+#define karmanline 6478.1
 #define DEG_TO_RAD(x) ((x)*0.0174532925)
 #define RAD_TO_DEG(x) ((x)*57.2957795)
 
@@ -45,18 +45,17 @@ using std::cout;
 
 Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
-	//800x quicker than reality
-	timeScale = 800.f;
+	//400x quicker than reality
+	timeScale = 1.f;
 	//-> Using this to slow things down might cause numerical instability!
 
 	addEarth();
-	
 	
 	//Sample with all parameters. This height corresponds to GEO.
 	//addSatellite(42164.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, true);
 	
 	//addSatellite(20550.0, 300., 50., 280., 0.0, 0);
-	addSatellite(10550.0, 300., 50., 280., 0.0, 0);
+	addSatellite(7500, 300., 50., 280., 0.0, 0);
 	
 	/*
 	// THIS IS THE GPS 'CONSTELLATION' -> with realistic orbital elements.

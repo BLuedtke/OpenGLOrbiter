@@ -15,8 +15,7 @@ public:
 	~Satellite();
 	std::vector<Vector> calcOrbitVis();
 	void update(double dtime);
-	void calcKeplerProblem(double timePassed, double t0 = 0.0);
-	void saveCurrentR0Length();
+	void calcKeplerProblem(double timePassed, double t0);
 
 private:
 	Vector v;
@@ -24,10 +23,12 @@ private:
 	OrbitEphemeris ephemeris;
 
 	double totalTime = 0.0;
+	//evil hack
+	double savedTime = 0.0;
 
 	//counts completed orbits
 	unsigned int orbits = 0;
-	float r0LengthSaved = 0.f;
+	float lastOrbitV0Length = 0.f;
 	float lastOrbitR0Length = 0.f;
 
 	double computeXfirstGuess(double t);

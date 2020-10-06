@@ -4,6 +4,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <chrono>
+#include <iomanip>
 
 #define DEG_TO_RAD(x) ((x)*0.0174532925)
 #define RAD_TO_DEG(x) ((x)*57.2957795)
@@ -92,13 +93,20 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 		double zn = computeZ(xn);
 		double tn = computeTnByXn(xn, zn); //NAN if eccentricity = 1
 		double x = xnNewtonIteration(xn, diffTime, tn, zn);
-		
 		//Evaluate f and g from equations (4.4-31) and (4.4-32)
 		double f = computeSmallF(x);
 		double g = computeSmallG(x, diffTime);
 		//Now compute r by 4.4-18
 		Vector rN = computeRVec(f, g);
 		
+		//TESTING alternate 4.4-13
+		double z = computeZ(x);
+		Vector r0 = this->ephemeris.getR0();
+		Vector v0 = this->ephemeris.getV0();
+		//double rTestLength = pow(x, 2.0) * computeCseries(z) + ((r0.dot(v0)) / (sqMU)) * x * (1.0 - z * computeSseries(z)) + r0.length() * (1.0 - z * computeCseries(z));
+		//cout << "; xn: " << xn  << "; x: " << x << "; z: " << z << "; rN Length: " << rN.length() << "; rTest Length: " << rTestLength << endl;
+		//cout << "rN Length: " << rN.length() << "; rTest Length: " << rTestLength << endl;
+		cout << "rN Length: " << std::setprecision(10) << rN.length() << "; tD " << std::setprecision(6) << diffTime << endl;
 		//Evaluate fD and gD from equations 4.4-35 and 4.4-36
 		double fD = computeSmallFDerivative(x, rN.length());
 		double gD = computeSmallGDerivative(x, rN.length());
@@ -107,7 +115,8 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 		double test = f * gD - fD * g;
 		if (abs(test) > 1.0000000001) {
 			//The larger the difference to 1, the higher the error of the determined position
-			cout << "should be near 1: " << abs(test) << endl;
+			//cout << "should be near 1: " << abs(test) << endl;
+			//-> TODO handling
 		}
 		
 		// Now compute v from 4.4-19
@@ -125,11 +134,6 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 	}
 }
 
-//For Debugging
-void Satellite::saveCurrentR0Length()
-{
-	this->r0LengthSaved = this->ephemeris.getR0().length();
-}
 
 //4.4-7
 //The Semi Major Axis in the OrbitalEphemeris object has to be != 0 for this to work
@@ -228,7 +232,8 @@ double Satellite::xnNewtonIteration(double xn, double t, double tn, double zn)
 		xNext = xNext + ((t - timeN) / dtdx);
 		zNext = computeZ(xNext);
 		timeN = computeTnByXn(xNext, zNext);
-		if ((t - timeN) < 0.0000001) {
+		//Yes, we need to be that precise - else we get a pretty substantial error-build-up.
+		if ((t - timeN) < 0.000000000001) {
 			//cout << "Approximated time: " << timeN << endl;
 			break;
 		}
@@ -328,19 +333,31 @@ void Satellite::update(double deltaT)
 		if (totalTime > ephemeris.getEllipseOrbitalPeriod()) {
 			orbits++;
 			float currentR0Length = this->ephemeris.getR0().length();
-			cout << orbits << " Orbits completed. R Length: " << currentR0Length << "; R-L last orbit: " << lastOrbitR0Length << "; Diff: " << lastOrbitR0Length - currentR0Length << endl;
+			//cout << orbits << " Orbits. RLength: " << currentR0Length << "; R-Llastorbit: " << lastOrbitR0Length << "; Diff: " << currentR0Length - lastOrbitR0Length << endl;
+			//cout << "V0 Length: " << this->ephemeris.getV0().length() << endl;
 			this->lastOrbitR0Length = currentR0Length;
 			//Debugging Rounding Errors stuff with a satellite with eccentricity 0 -> Will absolutely fail with other sats
 			this->ephemeris.semiMajorA = currentR0Length;
 			//Still debugging -> Force recalculation of expected orbital period with adjusted SemiMajorAxis, to collect data on the rounding error per orbit
 			double newPeriod = ephemeris.getEllipseOrbitalPeriod(true);
-			cout << "next expected orbital period: " << newPeriod << endl;
+			//cout << "next expected orbital period: " << newPeriod << endl;
 			//This is done to keep the value for totalTime in a reasonable range. Should replace this with a simpler/more intuitive overflow check
 			totalTime = totalTime - ephemeris.getEllipseOrbitalPeriod();
 		}
+		//cout << deltaT << endl;
+		
 		double t0 = totalTime;
 		totalTime += deltaT;
-		calcKeplerProblem(totalTime, t0);
+		//Prevent Time Delta from getting too low - extremely naive fix. This will likely cause stuttering and incorrect flight times on some configurations. However, if a pc is limited
+		// to 60fps or 75fps (such is the case for @BLuedtke), it'll work.
+		if (deltaT < 0.013 && savedTime < 0.013) {
+			savedTime += deltaT;
+		}
+		else {
+			calcKeplerProblem(totalTime, totalTime-(savedTime+deltaT));
+			savedTime = 0;
+		}
+		
 		Matrix f = Matrix();
 		f.translation(r);
 		uTransform = f;
@@ -368,6 +385,9 @@ std::vector<Vector> Satellite::calcOrbitVis()
 {
 	std::vector<Vector> resVec;
 	double startAngle = this->ephemeris.trueAnomaly;
+	//The large timesteps of this method cause some rounding errors. Therefore, save the first values for r0 and v0 and update them later.
+	Vector r0s = this->ephemeris.getR0();
+	Vector v0s = this->ephemeris.getV0();
 	this->ephemeris.trueAnomaly = 0.0f;
 
 	//Debugging/Time Measurement
@@ -389,6 +409,10 @@ std::vector<Vector> Satellite::calcOrbitVis()
 		this->calcKeplerProblem(this->totalTime, this->totalTime-stepper);
 		//t2 = std::chrono::high_resolution_clock::now();
 		//totalTimeMilli += timeInMilliSeconds(t1, t2);
+		if (stepper == 1) {
+			r0s = this->ephemeris.getR0();
+			v0s = this->ephemeris.getV0();
+		}
 		if (r.lengthSquared() > 0.000001f) {
 			resVec.push_back(r);
 		}
@@ -400,11 +424,13 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	}
 	this->ephemeris.trueAnomaly = startAngle;
 	this->totalTime = 0.0;
+	this->ephemeris.updateR0V0(r0s, v0s);
 	//cout << "Total time taken for all calcKepler: " << totalTimeMilli << endl;
 	//cout << "Avg: " << (totalTimeMilli / (double)runner) << endl;
 	//Just for testing:
 	//cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getEllipseOrbitalPeriod() << endl;
 	//cout << "Points for vis: " << resVec.size() << endl;
+	cout << "Finished Calculating Orbit Line" << endl;
 	return (resVec);
 }
 
