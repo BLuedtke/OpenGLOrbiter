@@ -27,7 +27,7 @@ public:
             float _10, float _11, float _12, float _13,
             float _20, float _21, float _22, float _23,
             float _30, float _31, float _32, float _33 );
-
+    Matrix(Matrix&&) noexcept = default;
     
     operator float*();
     operator const float* const();
@@ -35,10 +35,12 @@ public:
     Matrix operator*(const Matrix& M) const;
     Matrix& operator*=(const Matrix& M);
     Vector operator*(const Vector& v) const;
+    Matrix& operator=(Matrix&&) noexcept = default;
     
     bool operator==(const Matrix& M);
     bool operator!=(const Matrix& M);
     
+
     Vector left() const;
     Vector right() const;
     Vector up() const;
@@ -47,30 +49,30 @@ public:
     Vector backward() const;
     Vector translation() const;
     
-    void up( const Vector& v);
-    void forward( const Vector& v);
-    void right( const Vector& v);
+    void up(const Vector& v);
+    void forward(const Vector& v);
+    void right(const Vector& v);
     
-    Matrix& multiply(const Matrix& M );
-    Matrix& translation(float X, float Y, float Z );
+    Matrix& multiply(const Matrix& M);
+    Matrix& translation(float X, float Y, float Z);
     Matrix& translation(const Vector& XYZ );
     Matrix& rotationX(double Angle );
     Matrix& rotationY(double Angle );
     Matrix& rotationZ(double Angle );
     Matrix& rotationYawPitchRoll(double Yaw, double Pitch, double Roll );
-    Matrix& rotationYawPitchRoll(const Vector& Angles );
+    Matrix& rotationYawPitchRoll(const Vector& Angles);
     Matrix& rotationAxis(const Vector& Axis, double Angle);
-    Matrix& scale(float ScaleX, float ScaleY, float ScaleZ );
-    Matrix& scale(const Vector& Scalings );
-    Matrix& scale(float Scaling );
+    Matrix& scale(float ScaleX, float ScaleY, float ScaleZ);
+    Matrix& scale(const Vector& Scalings);
+    Matrix& scale(float Scaling);
     Matrix& identity();
     Matrix& transpose();
     Matrix& invert();
-    Matrix& lookAt(const Vector& Target, const Vector& Up, const Vector& Position );
-    Matrix& perspective(float Fovy, float AspectRatio, float NearPlane, float FarPlane );
-    Matrix& orthographic(float Width, float Height, float Near, float Far );
-    Vector transformVec4x4( const Vector& v) const;
-    Vector transformVec3x3( const Vector& v) const;
+    Matrix& lookAt(const Vector& Target, const Vector& Up, const Vector& Position);
+    Matrix& perspective(float Fovy, float AspectRatio, float NearPlane, float FarPlane);
+    Matrix& orthographic(float Width, float Height, float Near, float Far);
+    Vector transformVec4x4(const Vector& v) const;
+    Vector transformVec3x3(const Vector& v) const;
     float determinat();
 };
 
