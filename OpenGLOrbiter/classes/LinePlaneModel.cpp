@@ -8,8 +8,8 @@ LinePlaneModel::LinePlaneModel( float DimX, float DimZ, int NumSegX, int NumSegZ
 {
     VB.begin();
     
-    float StepX = DimX / (float)NumSegX;
-    float StepZ = DimZ / (float)NumSegZ;
+    float StepX = DimX / static_cast<float>(NumSegX);
+    float StepZ = DimZ / static_cast<float>(NumSegZ);
     
     float BeginX = -DimZ/2.0f;
     float BeginZ = -DimX/2.0f;

@@ -14,7 +14,7 @@ Camera::Camera(GLFWwindow* pWin) : m_Position(0.0f,5.0f,5.0f), m_Target(0.0f,0.0
         glfwGetWindowSize(pWindow, &WindowWidth, &WindowHeight);
     
     m_ViewMatrix.identity();
-    m_ProjMatrix.perspective((float)M_PI*65.0f/180.0f, (float)WindowWidth/(float)WindowHeight, 0.045f, 1000.0f);
+    m_ProjMatrix.perspective(static_cast<float>(M_PI*65.0f/180.0f), static_cast<float>(WindowWidth)/static_cast<float>(WindowHeight), 0.045f, 1000.0f);
 }
 
 Vector Camera::position() const
@@ -57,15 +57,15 @@ void Camera::mouseInput( int x, int y, int Button, int State)
         
         if( Button == GLFW_MOUSE_BUTTON_LEFT )
         {
-            rotate((float)x, (float)y );
+            rotate(static_cast<float>(x), static_cast<float>(y) );
         }
         else if( Button == GLFW_MOUSE_BUTTON_RIGHT)
         {
-            pan( (float)(m_LastMouseX-x)*0.01f, (float)(m_LastMouseY-y)*0.01f );
+            pan( static_cast<float>(m_LastMouseX-x)*0.01f, static_cast<float>(m_LastMouseY-y)*0.01f );
         }
         else if( Button == GLFW_MOUSE_BUTTON_MIDDLE)
         {
-            zoom( (float)(m_LastMouseY-y)*0.01f );
+            zoom( static_cast<float>(m_LastMouseY-y)*0.01f );
             
         }
     }
@@ -111,7 +111,7 @@ void Camera::zoom( float dz)
 
 void Camera::rotate( float x, float y )
 {
-    Vector po = getVSpherePos((float) m_LastMouseX, (float)m_LastMouseY);
+    Vector po = getVSpherePos(static_cast<float> (m_LastMouseX), static_cast<float>(m_LastMouseY));
     Vector pn = getVSpherePos(x, y);
     
     if((po-pn).lengthSquared() < 0.0001f ){
@@ -173,7 +173,7 @@ const Matrix& Camera::getProjectionMatrix() const
 
 Vector Camera::getVSpherePos(float x, float y)
 {
-    Vector p( 1.0f*x/(float)WindowWidth*2.0f - 1.0f, 1.0f*y/(float)WindowHeight*2.0f -1.0f, 0);
+    Vector p( 1.0f*x/static_cast<float>(WindowWidth)*2.0f - 1.0f, 1.0f*y/static_cast<float>(WindowHeight)*2.0f -1.0f, 0);
     p.Y = -p.Y;
     float sqrLen = p.lengthSquared();
 

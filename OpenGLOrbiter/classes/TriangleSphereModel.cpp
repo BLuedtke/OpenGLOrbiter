@@ -12,14 +12,14 @@ TriangleSphereModel::TriangleSphereModel( float Radius, int Stacks, int Slices )
     for( int i=0; i<Stacks; ++i)
         for( int j=0; j<Slices; ++j)
         {
-            float phi = (float)j*(float)M_PI*2.0f/(float)(Slices-1);
-            float theta = (float)i*(float)M_PI/(float)(Stacks-1);
+            float phi = (float)(j)*(float)(M_PI)*2.0f/(float)(Slices-1);
+            float theta = (float)(i)*(float)(M_PI)/(float)(Stacks-1);
             float x = Radius*sin( phi )*sin(theta);
             float z = Radius*cos( phi )*sin(theta);
             float y = Radius*cos( theta );
             VB.addNormal( Vector(x,y,z).normalize());
-            VB.addTexcoord0( phi/((float)M_PI*2.0f), theta/ (float)M_PI );
-            VB.addTexcoord1( (float)Slices*phi/((float)M_PI*2.0f), (float)Stacks*(theta/ (float)M_PI) );
+            VB.addTexcoord0( phi/((float)(M_PI)*2.0f), theta/ (float)(M_PI) );
+            VB.addTexcoord1( (float)(Slices*phi)/((float)(M_PI)*2.0f), (float)(Stacks*(theta/ (float)(M_PI))) );
             VB.addVertex(x, y, z);
         }
     VB.end();

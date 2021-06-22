@@ -54,12 +54,12 @@ void OrbitEphemeris::calcR0V0()
 		Vector P = pqw.right();
 		Vector Q = pqw.backward();
 		double semiLatRect = semiMajorA * (1.0 - pow(eccentricity, 2.0));
-		float rScal = (float)(semiLatRect / (1.0 + eccentricity * 1.0));
+		float rScal = static_cast<float>(semiLatRect / (1.0 + eccentricity * 1.0));
 		r0 = P * rScal;
 		//r0 = P * rScal * 1.0f;	//Unsure about origin of the *1.0f there TODO Re-check in the book
 
-		Vector temp = Q * (float)(this->eccentricity + 1.0);
-		v0 = temp * (float)std::sqrt(mu / semiLatRect);
+		Vector temp = Q * static_cast<float>(this->eccentricity + 1.0);
+		v0 = temp * static_cast<float>std::sqrt(mu / semiLatRect);
 		doR0V0exist = true;
 	}
 	catch (const std::exception& e)

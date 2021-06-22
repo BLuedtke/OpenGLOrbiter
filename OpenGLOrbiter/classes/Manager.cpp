@@ -45,18 +45,22 @@ using std::cout;
 
 Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
-	//400x quicker than reality
-	timeScale = 1.f;
+	//speedup, higher timescale = faster
+	timeScale = 100.f;
 	//-> Using this to slow things down might cause numerical instability!
 
 	addEarth();
+	std::cout << 1e-10 << std::endl;
 	
-	//Sample with all parameters. This height corresponds to GEO.
-	//addSatellite(42164.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, true);
+	addSatellite(60875.0, 0.00, 0.00, 0.00, 0.00, 0.00, true, true);
+	//addSatellite(22164.0, 0.01, 0.01, 0.01, 0.01, 0.01, true, true);
 	
-	//addSatellite(20550.0, 300., 50., 280., 0.0, 0);
-	addSatellite(7500, 300., 50., 280., 0.0, 0);
-	
+	//addSatellite(20550.0, 300., 0., 0., 0., 0);
+	//addSatellite(7500, 300., 50., 280., 0.0, 0);
+	//addSatellite(7500, 100., 20., 210., 0.1, 0);
+	//addSatellite(12500, 200., 10., 250., 0.3, 0);
+	//addSatellite(21164.0f, 0.0f, 39.0f, 0.0f, 0.6f);
+
 	/*
 	// THIS IS THE GPS 'CONSTELLATION' -> with realistic orbital elements.
 	//TODO Switch the parameters to doubles.
@@ -97,7 +101,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	//addSatellite(9164.0f, 0.0f, 90.0f, 0.0f, 0.2f);
 
 	/**/
-	//addEquatorLinePlane();
+	addEquatorLinePlane();
 }
 
 //addSat Params: semi Major Axis, longitude of ascending node, inclination, argument of periapsis, eccentricity, true Anomaly, orbitVisualisation, fullLine
@@ -123,7 +127,7 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 	sat->setShader(std::move(uShader));
 	if (orbitVis == true) {
 		std::vector<Vector> resOrbit = sat->calcOrbitVis();
-		unique_ptr<FlatColorShader> uCShader = std::make_unique<FlatColorShader>(Color(0, 0.4f, 0));
+		unique_ptr<FlatColorShader> uCShader = std::make_unique<FlatColorShader>(Color(0.9f, 0.2f, 0));
 		unique_ptr<StandardModel> uModel = std::make_unique<OrbitLineModel>(resOrbit,fullLine);
 		uModel->setShader(std::move(uCShader));
 		uModels.push_back(std::move(uModel));
@@ -134,9 +138,9 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 void Manager::addEquatorLinePlane()
 {
 	Matrix baseTransform = Matrix();
-	std::unique_ptr<StandardModel> uModel = std::make_unique<LinePlaneModel>(10, 10, 5, 5);
+	std::unique_ptr<StandardModel> uModel = std::make_unique<LinePlaneModel>(20, 20, 45, 45);
 	unique_ptr<FlatColorShader>uCShader = std::make_unique<FlatColorShader>();
-	uCShader->color(Color(0.1f, 0.5f, 0.1f));
+	uCShader->color(Color(0.4f, 0.4f, 0.4f));
 	uModel->setShader(std::move(uCShader));
 	uModel->transform(baseTransform);
 	uModels.push_back(std::move(uModel));
@@ -213,4 +217,5 @@ void Manager::draw()
 void Manager::end()
 {
 	cout << "Ending." << endl;
+	//No pointers to release/delete as we are working with smart pointers.
 }

@@ -143,13 +143,13 @@ void VertexBuffer::end()
     }
     
 
-    GLuint ElementSize = 4*sizeof(float) +
-                        ((ActiveAttributes&NORMAL) ? 4*sizeof(float) : 0) +
-                        ((ActiveAttributes&COLOR) ?  4*sizeof(float) : 0) +
-                        ((ActiveAttributes&TEXCOORD0) ? 3*sizeof(float) : 0) +
-                        ((ActiveAttributes&TEXCOORD1) ? 3*sizeof(float) : 0) +
-                        ((ActiveAttributes&TEXCOORD2) ? 3*sizeof(float) : 0) +
-                        ((ActiveAttributes&TEXCOORD3) ? 3*sizeof(float) : 0);
+    GLuint ElementSize = 4 * sizeof( float ) +
+                        ((ActiveAttributes&NORMAL) ? 4 * sizeof( float ) : 0) +
+                        ((ActiveAttributes&COLOR) ?  4 * sizeof( float ) : 0) +
+                        ((ActiveAttributes&TEXCOORD0) ? 3 * sizeof( float ) : 0) +
+                        ((ActiveAttributes&TEXCOORD1) ? 3 * sizeof( float ) : 0) +
+                        ((ActiveAttributes&TEXCOORD2) ? 3 * sizeof( float ) : 0) +
+                        ((ActiveAttributes&TEXCOORD3) ? 3 * sizeof( float ) : 0);
     GLuint BufferSize = (GLuint)Vertices.size() * ElementSize;
     
     char* ByteBuf = new char[BufferSize];

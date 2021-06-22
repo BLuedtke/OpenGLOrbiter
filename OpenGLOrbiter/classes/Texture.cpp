@@ -365,7 +365,7 @@ RGBImage* Texture::createImage( unsigned char* Data, unsigned int width, unsigne
     for( unsigned int i=0; i<height; i++)
 		for (unsigned int j = 0; j<width; j++)
         {
-            Color c( (float)*(Data)/255.0f, (float)*(Data+1)/255.0f, (float)*(Data+2)/255.0f);
+            Color c( (float )*(Data)/255.0f, (float )*(Data+1)/255.0f, (float )*(Data+2)/255.0f);
             pImage->setPixelColor(j, i, c);
             Data+=4;
         }

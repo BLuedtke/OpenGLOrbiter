@@ -73,14 +73,14 @@ Vector Matrix::transformVec4x4( const Vector& v) const
     float Z = m20*v.X + m21*v.Y + m22*v.Z + m23;
     float W = m30*v.X + m31*v.Y + m32*v.Z + m33;
     return Vector( X/W, Y/W, Z/W);
-    
 }
+
 Vector Matrix::transformVec3x3( const Vector& v) const
 {
-    float X = m00*v.X + m01*v.Y + m02*v.Z;
-    float Y = m10*v.X + m11*v.Y + m12*v.Z;
-    float Z = m20*v.X + m21*v.Y + m22*v.Z;
-    return Vector( X, Y, Z);
+    const float xT = m00*v.X + m01*v.Y + m02*v.Z;
+    const float yT = m10*v.X + m11*v.Y + m12*v.Z;
+    const float zT = m20*v.X + m21*v.Y + m22*v.Z;
+    return Vector( xT, yT, zT);
 }
 
 
@@ -124,21 +124,21 @@ Vector Matrix::translation() const
     return Vector(m03, m13, m23);
 }
 
-void Matrix::up( const Vector& v)
+void Matrix::up(const Vector& v)
 {
     m01 = v.X;
     m11 = v.Y;
     m21 = v.Z;
 }
 
-void Matrix::forward( const Vector& v)
+void Matrix::forward(const Vector& v)
 {
     m02 = v.X;
     m12 = v.Y;
     m22 = v.Z;
 }
 
-void Matrix::right( const Vector& v)
+void Matrix::right(const Vector& v)
 {
     m00 = v.X;
     m10 = v.Y;
@@ -172,6 +172,7 @@ Matrix& Matrix::multiply(const Matrix& M )
     *this = Tmp;
     return *this;
 }
+
 Matrix& Matrix::translation(float X, float Y, float Z )
 {
     m00= 1;	m01= 0;	m02= 0;	m03= X;
@@ -180,6 +181,7 @@ Matrix& Matrix::translation(float X, float Y, float Z )
     m30= 0;	m31= 0;	m32= 0;	m33= 1;
     return *this;
 }
+
 Matrix& Matrix::translation(const Vector& XYZ )
 {
     return translation(XYZ.X, XYZ.Y, XYZ.Z);
@@ -191,12 +193,14 @@ Matrix& Matrix::rotationX(double Angle )
     m20= 0;					m23= 0;
     m30= 0;	m31= 0;	m32= 0;	m33= 1;
     
-    m11 = m22 = cosf((float)Angle);
-    m21 = sinf((float)Angle);
+    m11 = cosf(static_cast<float>(Angle));
+    m22 = m11;
+    m21 = sinf(static_cast<float>(Angle));
     m12 = -m21;
     
     return *this;
 }
+
 Matrix& Matrix::rotationY(double Angle )
 {
             m01= 0;         m03= 0;
@@ -204,12 +208,13 @@ Matrix& Matrix::rotationY(double Angle )
             m21= 0;         m23= 0;
     m30= 0;	m31= 0;	m32= 0;	m33= 1;
     
-    m00 = m22 = cosf((float)Angle);
-    m02 = sinf((float)Angle);
+    m00 = m22 = cosf(static_cast<float>(Angle));
+    m02 = sinf(static_cast<float>(Angle));
     m20 = -m02;
     
     return *this;
 }
+
 Matrix& Matrix::rotationZ(double Angle )
 {
                     m02= 0;	m03= 0;
@@ -217,12 +222,13 @@ Matrix& Matrix::rotationZ(double Angle )
     m20= 0;	m21= 0;	m22= 1;	m23= 0;
     m30= 0;	m31= 0;	m32= 0;	m33= 1;
     
-    m00 = m11 = cosf((float)Angle);
-    m10= sinf((float)Angle);
+    m00 = m11 = cosf(static_cast<float>(Angle));
+    m10= sinf(static_cast<float>(Angle));
     m01= -m10;
     
     return *this;
 }
+
 Matrix& Matrix::rotationYawPitchRoll(double Yaw, double Pitch, double Roll )
 {
     double cosx = cos(Pitch);
@@ -233,19 +239,19 @@ Matrix& Matrix::rotationYawPitchRoll(double Yaw, double Pitch, double Roll )
 	double siny = sin(Yaw);
 	double sinz = sin(Roll);
     
-    m00 = (float)(cosz*cosy + sinz*sinx*siny);
-    m10 = (float)(sinz*cosx);
-    m20 = (float)(-cosz*siny + sinz*sinx*cosy);
+    m00 = static_cast<float>(cosz*cosy + sinz*sinx*siny);
+    m10 = static_cast<float>(sinz*cosx);
+    m20 = static_cast<float>(-cosz*siny + sinz*sinx*cosy);
     m30 = 0.0f;
 
-    m01 = (float)(-sinz*cosy + cosz*sinx*siny);
-    m11 = (float)(cosz*cosx);
-    m21 = (float)(sinz*siny + cosz*sinx*cosy);
+    m01 = static_cast<float>(-sinz*cosy + cosz*sinx*siny);
+    m11 = static_cast<float>(cosz*cosx);
+    m21 = static_cast<float>(sinz*siny + cosz*sinx*cosy);
     m31 = 0.0f;
     
-    m02 = (float)(cosx*siny);
-    m12 = (float)(-sinx);
-    m22 = (float)(cosx*cosy);
+    m02 = static_cast<float>(cosx*siny);
+    m12 = static_cast<float>(-sinx);
+    m22 = static_cast<float>(cosx*cosy);
     m32 = 0.0f;
     
     m03 = m13 = m23 = 0.f;
@@ -253,16 +259,18 @@ Matrix& Matrix::rotationYawPitchRoll(double Yaw, double Pitch, double Roll )
     
     return *this;
 }
+
 Matrix& Matrix::rotationYawPitchRoll(const Vector& Angles )
 {
     rotationYawPitchRoll(Angles.X, Angles.Y, Angles.Z);
     return *this;
 }
+
 Matrix& Matrix::rotationAxis(const Vector& Axis, double Angle)
 {
 	
-    const float Si = sinf((float)Angle);
-    const float Co = cosf((float)Angle);
+    const float Si = sinf(static_cast<float>(Angle));
+    const float Co = cosf(static_cast<float>(Angle));
     const float OMCo = 1 - Co;
     Vector Ax = Axis;
     Ax.normalize();
@@ -359,7 +367,7 @@ Matrix& Matrix::invert()
     const float num38 = -(((num9 * num23) - (num7 * num20)) + (num6 * num19));
     const float num37 = ((num9 * num22) - (num8 * num20)) + (num6 * num18);
     const float num36 = -(((num9 * num21) - (num8 * num19)) + (num7 * num18));
-    const float num = (float)1 / ((((num5 * num39) + (num4 * num38)) + (num3 * num37)) + (num2 * num36));
+    const float num = static_cast<float>(1 / ((((num5 * num39) + (num4 * num38)) + (num3 * num37)) + (num2 * num36)));
     m00 = num39 * num;
     m10 = num38 * num;
     m20 = num37 * num;
