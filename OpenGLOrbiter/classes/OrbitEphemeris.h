@@ -7,6 +7,7 @@ class OrbitEphemeris {
 public:
 	OrbitEphemeris();
 	OrbitEphemeris(double semiA, double ecc, double incli, double longAscNode, double argP, double trueAnomal);
+	
 	double semiMajorA;	// a
 	double eccentricity; // e
 	double inclination;  // i

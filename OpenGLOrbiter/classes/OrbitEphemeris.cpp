@@ -59,7 +59,7 @@ void OrbitEphemeris::calcR0V0()
 		//r0 = P * rScal * 1.0f;	//Unsure about origin of the *1.0f there TODO Re-check in the book
 
 		Vector temp = Q * static_cast<float>(this->eccentricity + 1.0);
-		v0 = temp * static_cast<float>std::sqrt(mu / semiLatRect);
+		v0 = temp * static_cast<float>(std::sqrt(mu / semiLatRect));
 		doR0V0exist = true;
 	}
 	catch (const std::exception& e)

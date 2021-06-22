@@ -27,7 +27,9 @@ public:
             float _10, float _11, float _12, float _13,
             float _20, float _21, float _22, float _23,
             float _30, float _31, float _32, float _33 );
+
     Matrix(Matrix&&) noexcept = default;
+    Matrix(const Matrix &) noexcept = default;
     
     operator float*();
     operator const float* const();
@@ -36,6 +38,7 @@ public:
     Matrix& operator*=(const Matrix& M);
     Vector operator*(const Vector& v) const;
     Matrix& operator=(Matrix&&) noexcept = default;
+    Matrix& operator=(const Matrix&) noexcept = default;
     
     bool operator==(const Matrix& M);
     bool operator!=(const Matrix& M);

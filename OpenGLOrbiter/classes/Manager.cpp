@@ -46,15 +46,17 @@ using std::cout;
 Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
 	//speedup, higher timescale = faster
-	timeScale = 100.f;
 	//-> Using this to slow things down might cause numerical instability!
+	timeScale = 10.f;
+	cout << "Timescale: " << timeScale << "\n";
 
 	addEarth();
-	std::cout << 1e-10 << std::endl;
 	
-	addSatellite(60875.0, 0.00, 0.00, 0.00, 0.00, 0.00, true, true);
+	addSatellite(60975.0, 0.00, 0.00, 0.00, 0.00, 0.00, true, true);
+	addSatellite(60675.0, 0.00, 0.00, 0.00, 0.00, 0.00, true, true);
+	addSatellite(60375.0, 0.01, 0.01, 0.01, 0.01, 0.01, true, true);
+	
 	//addSatellite(22164.0, 0.01, 0.01, 0.01, 0.01, 0.01, true, true);
-	
 	//addSatellite(20550.0, 300., 0., 0., 0., 0);
 	//addSatellite(7500, 300., 50., 280., 0.0, 0);
 	//addSatellite(7500, 100., 20., 210., 0.1, 0);
@@ -108,14 +110,7 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 //Passing fullLine=false is experimental and may lead to numerical instability. More robust orbit visualization techniques are being thought of.
 void Manager::addSatellite(double semiA, double lAscN, double incli, double argP, double ecc, double trueAnom, bool orbitVis, bool fullLine )
 {
-	OrbitEphemeris o = OrbitEphemeris();
-	o.semiMajorA = semiA;
-	o.eccentricity = ecc;
-	o.inclination = DEG_TO_RAD(incli);
-	o.longitudeAsc = DEG_TO_RAD(lAscN);
-	o.argPeriaps = DEG_TO_RAD(argP);
-	o.trueAnomaly = DEG_TO_RAD(trueAnom);
-	addSatellite(o,orbitVis,fullLine);
+	addSatellite(OrbitEphemeris(semiA, ecc, DEG_TO_RAD(incli), DEG_TO_RAD(lAscN), DEG_TO_RAD(argP), DEG_TO_RAD(trueAnom)),orbitVis,fullLine);
 }
 
 
@@ -138,8 +133,8 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 void Manager::addEquatorLinePlane()
 {
 	Matrix baseTransform = Matrix();
-	std::unique_ptr<StandardModel> uModel = std::make_unique<LinePlaneModel>(20, 20, 45, 45);
-	unique_ptr<FlatColorShader>uCShader = std::make_unique<FlatColorShader>();
+	unique_ptr<StandardModel>   uModel = std::make_unique<LinePlaneModel>(20, 20, 45, 45);
+	unique_ptr<FlatColorShader> uCShader = std::make_unique<FlatColorShader>();
 	uCShader->color(Color(0.4f, 0.4f, 0.4f));
 	uModel->setShader(std::move(uCShader));
 	uModel->transform(baseTransform);
@@ -148,20 +143,16 @@ void Manager::addEquatorLinePlane()
 
 void Manager::addEarth()
 {
+	unique_ptr<TriangleSphereModel> uModel = std::make_unique<TriangleSphereModel>(1.0f);
+	unique_ptr<PhongShader> uShader = std::make_unique<PhongShader>();
+	
+	uShader->diffuseTexture(Texture::LoadShared("earth5.bmp"));
+	uShader->ambientColor(Color(0.5f, 0.5f, 0.5f));
+
 	Matrix baseTransform = Matrix();
 	baseTransform.translation(0.0f, 0.0f, 0.0f);
-
-	unique_ptr<TriangleSphereModel> uModel = std::make_unique<TriangleSphereModel>(1.0f);
-	std::unique_ptr<PhongShader> uShader = std::make_unique<PhongShader>();
-	//In Debug mode, loading the large earth texture takes VERY long -> load simpler texture
-#ifdef _DEBUG
-	uShader->diffuseTexture(Texture::LoadShared("earth.jpg"));
-#else
-	uShader->diffuseTexture(Texture::LoadShared("earth5.jpg"));
-#endif // DEBUG
-
-	uShader->ambientColor(Color(0.5f, 0.5f, 0.5f));
 	uModel->transform(baseTransform);
+
 	uModel->setShader(std::move(uShader));
 	planets.push_back(std::move(uModel));
 }

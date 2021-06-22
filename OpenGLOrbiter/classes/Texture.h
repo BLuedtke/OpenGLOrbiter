@@ -22,6 +22,8 @@
 #endif
 #endif
 
+#include <memory>
+
 class RGBImage;
 
 class Texture
@@ -35,6 +37,7 @@ public:
     ~Texture();
     bool load(const char* Filename);
     bool create(unsigned int width, unsigned int height, unsigned char* data);
+    
 	bool create(unsigned int width, unsigned int height, GLint InternalFormat, GLint Format, GLint ComponentSize, GLint MinFilter, GLint MagFilter, GLint AddressMode, bool GenMipMaps);
     bool create(const RGBImage& img);
     void activate(int slot=0) const;
@@ -48,11 +51,12 @@ public:
     static Texture* defaultEmissiveTex();
 	static Texture* defaultNormalTex();
     static const Texture* LoadShared(const char* Filename);
-    static void ReleaseShared( const Texture* pTex );
+    static void ReleaseShared(const Texture* pTex);
     
 private:
     void release();    
-    RGBImage* createImage( unsigned char* Data, unsigned int width, unsigned int height );
+    RGBImage* createImage( unsigned char* Data, unsigned int width, unsigned int height);
+    
     GLuint m_TextureID;
     RGBImage* m_pImage;
 	unsigned int Width;

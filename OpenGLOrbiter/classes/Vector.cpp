@@ -73,11 +73,11 @@ Vector& Vector::operator+=(const Vector& v)
 
 Vector& Vector::normalize()
 {
-	float l = this->length();
-	float kehrwert = 1 / l;
-	X = X * kehrwert;
-	Y = Y * kehrwert;
-	Z = Z * kehrwert;
+	auto l = this->length();
+	auto kehrwert = 1.0f / l;
+	X *= kehrwert;
+	Y *= kehrwert;
+	Z *= kehrwert;
 	return  *this;
 }
 
@@ -102,7 +102,7 @@ float Vector::lengthSquared() const
 
 Vector Vector::reflection(const Vector& normal) const
 {
-	float s = -2.0f * (this->dot(normal));
+	auto s = -2.0f * (this->dot(normal));
 	return *this + normal * s;
 }
 
@@ -112,7 +112,7 @@ std::string Vector::toString() const
 }
 
 void Vector::print() const {
-	std::cout << "X: " << this->X << "; Y: " << this->Y << "; Z: " << this->Z << std::endl;
+	std::cout << this->toString() << std::endl;
 }
 
 bool Vector::triangleIntersection(const Vector& d, const Vector& a, const Vector& b, const Vector& c, float& s) const

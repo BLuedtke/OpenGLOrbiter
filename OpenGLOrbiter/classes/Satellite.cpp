@@ -60,6 +60,7 @@ Satellite::Satellite(float Radius, OrbitEphemeris eph, int Stacks, int Slices) :
 	transform(standard);
 }
 
+
 Satellite::Satellite() : TriangleSphereModel(1.0f, 18, 36)
 {
 	Matrix standard = Matrix();
@@ -110,12 +111,15 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 		double x = xnNewtonIteration(xn, diffTime, tn, zn);
 		//std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 		//std::cout << "Time difference = " << timeInMilliSeconds(begin, end) << std::endl;
+		
 		//Evaluate f and g from equations (4.4-31) and (4.4-32)
+		
 		double f = computeSmallF(x);
 		double g = computeSmallG(x, diffTime);
+		
 		//Now compute r by 4.4-18
 		Vector rN = computeRVec(f, g);
-		//std::cout << "diffTime: " << diffTime << "; xn: " << xn << "; tn: " << tn << "; x: " << x << "; ";
+		
 		//TESTING alternate 4.4-13
 		double z = computeZ(x);
 		Vector r0 = this->ephemeris.getR0();
@@ -143,8 +147,8 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 			this->ephemeris.updateR0V0(rN, vN);
 		}
 		//All calculations are performed in "real" scale (1 unit = 1km), but the coordinate system is not to scale (1 unit = 6378.0km), so scale the vectors down
-		r = rN * (sizeFactor);
-		v = vN * (sizeFactor);
+		r = rN * sizeFactor;
+		v = vN * sizeFactor;
 		//std::cout << "Position: " << r.toString() << std::endl;
 		//std::cout << "z: " << z << "; r: " << r.toString() << "; v: " << v.toString() << std::endl;
 	}
@@ -152,6 +156,21 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 	{
 		cout << e.what() << endl;
 	}
+}
+
+Vector Satellite::getV() const
+{
+	return this->v;
+}
+
+Vector Satellite::getR() const
+{
+	return this->r;
+}
+
+OrbitEphemeris Satellite::getEphemeris() const
+{
+	return this->ephemeris;
 }
 
 
@@ -383,7 +402,7 @@ void Satellite::update(double deltaT)
 		// to 60fps or 75fps (such is the case for @BLuedtke), it'll work.
 		if (deltaT < 0.013 && savedTime < 0.013) {
 			savedTime += deltaT;
-			std::cout << "SavedTime" << std::endl;
+			//std::cout << "SavedTime" << std::endl;
 		}
 		else {
 			calcKeplerProblem(totalTime, totalTime-(savedTime+deltaT));
@@ -451,12 +470,12 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	this->ephemeris.trueAnomaly = startAngle;
 	this->totalTime = 0.0;
 	this->ephemeris.updateR0V0(r0s, v0s);
-	cout << "Total time taken for all calcKepler: " << totalTimeMilli << endl;
-	cout << "Avg: " << (totalTimeMilli / (double)runner) << endl;
-	cout << "Runner: " << runner << "; MaxSteps: " << maxSteps << "; timestep size (s): " << stepper << endl;
+	//cout << "Total time taken for all calcKepler: " << totalTimeMilli << endl;
+	//cout << "Avg: " << (totalTimeMilli / (double)runner) << endl;
+	//cout << "Runner: " << runner << "; MaxSteps: " << maxSteps << "; timestep size (s): " << stepper << endl;
 	//Just for testing:
-	cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getEllipseOrbitalPeriod() << endl;
-	cout << "Points for vis: " << resVec.size() << endl;
+	//cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getEllipseOrbitalPeriod() << endl;
+	//cout << "Points for vis: " << resVec.size() << endl;
 	cout << "Finished Calculating Orbit Line" << endl;
 	cout << "Starting Position: " << this->ephemeris.getR0().toString() << std::endl;
 	return (resVec);

@@ -64,11 +64,12 @@ Texture* Texture::defaultNormalTex()
 
 const Texture* Texture::LoadShared(const char* Filename)
 {	
+    
     std::string path = Filename;
     
     std::transform(path.begin(), path.end(), path.begin(), ::tolower);
     
-    SharedTexMap::iterator it = SharedTextures.find( path);
+    SharedTexMap::iterator it = SharedTextures.find(path);
     
     if(it != SharedTextures.end())
     {
@@ -77,18 +78,19 @@ const Texture* Texture::LoadShared(const char* Filename)
     }
     
     Texture* pTex = new Texture();
+
     if(!pTex->load(Filename) )
     {
         delete pTex;
         std::cout << "WARNING: Texture " << Filename << " not loaded (not found).\n";
         return NULL;
     }
-    
+        
     TexEntry TE;
     TE.pTex = pTex;
     TE.RefCount = 1;
     SharedTextures[path] = TE;
-    
+
     return pTex;
 }
 
@@ -196,10 +198,18 @@ GLuint Texture::ID() const
 bool Texture::load( const char* Filename)
 {
     release();
+
     FREE_IMAGE_FORMAT ImageFormat = FreeImage_GetFileType(Filename, 0);
-    if(ImageFormat == FIF_UNKNOWN)
+
+    if (ImageFormat == FIF_BMP) {
+        std::cout << "Loading bmp texture.\n";
+    }
+
+    if (ImageFormat == FIF_UNKNOWN) {
         ImageFormat = FreeImage_GetFIFFromFilename(Filename);
+    }
     
+
     if(ImageFormat == FIF_UNKNOWN)
     {
         std::cout << "Warning: Unkown texture format: " << Filename << std::endl;
@@ -213,6 +223,7 @@ bool Texture::load( const char* Filename)
         std::cout << "Warning: Unable to open texture image " << Filename << std::endl;
         return false;
     }
+
     
     FREE_IMAGE_TYPE Type = FreeImage_GetImageType(pBitmap);
     assert(Type==FIT_BITMAP);
@@ -231,7 +242,6 @@ bool Texture::load( const char* Filename)
         FreeImage_Unload(pBitmap);
         return false;
     }
-
     
     RGBQUAD c;
     for( unsigned int i=0; i<Height; ++i)
@@ -241,16 +251,19 @@ bool Texture::load( const char* Filename)
             *(++dataPtr) = c.rgbRed;
             *(++dataPtr) = c.rgbGreen;
             *(++dataPtr) = c.rgbBlue;
-            if(bpp==32)
+            if (bpp == 32) {
                 *(++dataPtr) = c.rgbReserved;
-            else
+            }
+            else {
                 *(++dataPtr) = 255;
+            }
         }
     
     FreeImage_Unload(pBitmap);
 
-    if( m_pImage )
+    if (m_pImage) {
         delete m_pImage;
+    }
     
     m_pImage = createImage(data, Width, Height);
     
@@ -269,6 +282,7 @@ bool Texture::load( const char* Filename)
 	Height = m_pImage->height();
     
     delete [] data;
+
     return true;
 }
 
@@ -332,9 +346,9 @@ bool Texture::create(const RGBImage& img)
     
     release();
     
-    const unsigned int w = img.width();
-    const unsigned int h = img.height();
-    unsigned char* data = new unsigned char[w*h*4];
+    const long w = img.width();
+    const long h = img.height();
+    unsigned char* data = new unsigned char[w * h * (long)4];
     
     unsigned int k=0;
     for( unsigned int i=0; i<h; i++)
@@ -371,6 +385,7 @@ RGBImage* Texture::createImage( unsigned char* Data, unsigned int width, unsigne
         }
     return pImage;
 }
+
 
 void Texture::activate(int slot) const
 {

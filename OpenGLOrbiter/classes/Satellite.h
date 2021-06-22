@@ -11,11 +11,18 @@ class Satellite : public TriangleSphereModel {
 public:
 	Satellite(float Radius, int Stacks = 18, int Slices = 36);
 	Satellite(float Radius, OrbitEphemeris eph, int Stacks = 18, int Slices = 36);
+
 	Satellite();
 	~Satellite();
-	std::vector<Vector> calcOrbitVis();
+
 	void update(double dtime);
 	void calcKeplerProblem(double timePassed, double t0);
+
+	Vector getV() const;
+	Vector getR() const;
+	OrbitEphemeris getEphemeris() const;
+
+	std::vector<Vector> calcOrbitVis();
 
 private:
 	Vector v;
@@ -23,7 +30,7 @@ private:
 	OrbitEphemeris ephemeris;
 
 	double totalTime = 0.0;
-	//evil hack
+	//stupid hack
 	double savedTime = 0.0;
 
 	//counts completed orbits
