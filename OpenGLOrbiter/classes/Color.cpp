@@ -32,7 +32,7 @@ Color Color::operator*(const float Factor) const
 
 Color Color::operator+(const Color& c) const
 {
-    return Color(std::min(this->R + c.R,1.0f),std::min(this->G + c.G,1.0f), std::min(this->B + c.B,1.0f));
+    return Color(std::fminf(this->R + c.R,1.0f), std::fminf(this->G + c.G,1.0f), std::fminf(this->B + c.B,1.0f));
 }
 
 Color& Color::operator+=(const Color& c)
