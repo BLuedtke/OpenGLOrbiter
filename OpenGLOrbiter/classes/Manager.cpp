@@ -133,7 +133,7 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 void Manager::addEquatorLinePlane()
 {
 	Matrix baseTransform = Matrix();
-	unique_ptr<StandardModel>   uModel = std::make_unique<LinePlaneModel>(20, 20, 45, 45);
+	unique_ptr<StandardModel>   uModel   = std::make_unique<LinePlaneModel>(20, 20, 45, 45);
 	unique_ptr<FlatColorShader> uCShader = std::make_unique<FlatColorShader>();
 	uCShader->color(Color(0.4f, 0.4f, 0.4f));
 	uModel->setShader(std::move(uCShader));
