@@ -159,9 +159,10 @@ void Manager::addEarth()
 
 void Manager::start()
 {
-	//Might need Depth-Testing later.
-    glEnable(GL_DEPTH_TEST); // enable depth-testing
-    glDepthFunc(GL_LESS); // depth-testing interprets a smaller value as "closer"
+	// enable depth-testing
+    glEnable(GL_DEPTH_TEST); 
+	// depth-testing interprets a smaller value as "closer"
+    glDepthFunc(GL_LESS); 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);	
 }
@@ -205,6 +206,8 @@ void Manager::draw()
     GLenum Error = glGetError();
     assert(Error==0);
 }
+
+
 void Manager::end()
 {
 	cout << "Ending." << endl;
