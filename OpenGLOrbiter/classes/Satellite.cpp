@@ -8,7 +8,7 @@
 #define DEG_TO_RAD(x) ((x)*0.0174532925f)
 #define RAD_TO_DEG(x) ((x)*57.2957795f)
 
-#define sizeFactor 1.0f/6378.0f
+#define sizeFactor (1.0f/6378.0f)
 // This mu was determined by trial-and-error, measured by approximating the flight time of the ISS orbit
 // (adjusted so that with speedUp 1.0f, ISS orbit flighttime is about the same as in real life (roughly).
 // In reality, there are more factors influencing this, and it does not scale down the same as the size.
@@ -93,10 +93,11 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 		//Compute first guesses and then use Newton Iteration to find x.
 		double diffTime = timePassed - t0;
 		double xn = computeXfirstGuess(diffTime);
+		
 		double zn = computeZ(xn);
 		double tn = computeTnByXn(xn, zn); //NAN if eccentricity = 1
 		double x = xnNewtonIteration(xn, diffTime, tn, zn);
-		
+		//cout << "x: " << x << endl;
 		//Evaluate f and g from equations (4.4-31) and (4.4-32);then compute r and r.length from equation (4.4-18)
 		double f = computeSmallF(x);
 		double g = computeSmallG(x, diffTime);
@@ -108,16 +109,18 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 		double gD = computeSmallGDerivative(x, rN.length());
 		
 		//check for accuracy of f, g, fD, gD
-		//double test = f * gD - fD * g;
-		//cout << "4.4-20 Check, should be near 1: " << test << endl;
+		double test = f * gD - fD * g;
+		if (abs(test) > 1.0000000001) {
+			cout << "should be near 1: " << abs(test) << endl;
+		}
 		
 		// Now compute v from 4.4-19
-		v = computeVVec(fD, gD);
+		Vector vN = computeVVec(fD, gD);
 		if (t0 > 0.0) {
-			this->ephemeris.updateR0V0(rN, v);
+			this->ephemeris.updateR0V0(rN, vN);
 		}
 		r = rN * (sizeFactor);
-		v = v * (sizeFactor);
+		v = vN * (sizeFactor);
 	}
 	catch (const std::exception& e)
 	{
@@ -362,7 +365,7 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	double orbPeriod = this->ephemeris.getEllipseOrbitalPeriod();
 
 	int runner = 0;
-	double stepper = 80;
+	double stepper = 120;
 	time_point t1;
 	time_point t2;
 	double totalTimeMilli = 0.0;

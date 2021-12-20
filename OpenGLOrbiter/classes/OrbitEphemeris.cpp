@@ -52,7 +52,6 @@ void OrbitEphemeris::calcR0V0()
 {
 	try
 	{
-
 		double semiLatRect = this->getOrCreateSemLatRect();
 		float rScal = (float)(semiLatRect / (1.0 + eccentricity * 1.0));
 		Matrix pqw = this->getPQWMatrix();
@@ -81,6 +80,9 @@ Vector OrbitEphemeris::getR0()
 	else
 	{
 		calcR0V0();
+		std::cout << "V0: ";
+		v0.print();
+		std::cout << v0.length();
 		return r0;
 	}
 }

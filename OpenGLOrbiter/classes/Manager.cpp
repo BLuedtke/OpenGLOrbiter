@@ -46,14 +46,16 @@ using std::cout;
 Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 {
 	//THIS SPEEDS UP EVERYTHING BY THE FACTOR passed in the parameter
-	speedUpSats(100.f);
+	speedUpSats(200.f);
 	//-> Using this to slow things down might cause numerical instability!
 
 	addEarth();
 	//Sample with all parameters. This height corresponds to GEO.
-	addSatellite(42164.0f  , 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
-	
-	/**/
+	//addSatellite(42164.0f  , 0.0f, 0.0f, 0.0f, 0.0f, 0.0, true, true);
+	//addSatellite(26550.0f, 302.8080f, 56.01f, 279.2863f, 0.02f, 0);
+	addSatellite(26550.0f, 302.8080f, 56.01f, 279.2863f, 0.0, 0);
+
+	/*
 	// THIS IS THE GPS 'CONSTELLATION' -> with realistic orbital elements.
 	addSatellite(26550.0f, 302.8080f, 56.01f, 279.2863f, 0.0186085f, 0);
 	addSatellite(26550.0f, 302.6010f, 56.06f, 35.3566f, 0.0113652f, 0);
@@ -118,7 +120,7 @@ void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color
 	sat->setShader(std::move(uShader));
 	if (orbitVis == true) {
 		std::vector<Vector> resOrbit = sat->calcOrbitVis();
-		unique_ptr<FlatColorShader> uCShader = std::make_unique<FlatColorShader>(Color(0, 1, 0));
+		unique_ptr<FlatColorShader> uCShader = std::make_unique<FlatColorShader>(Color(0, 0.4f, 0));
 		unique_ptr<StandardModel> uModel = std::make_unique<OrbitLineModel>(resOrbit,fullLine);
 		uModel->setShader(std::move(uCShader));
 		uModels.push_back(std::move(uModel));
