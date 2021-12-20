@@ -97,9 +97,6 @@
     <ClInclude Include="classes\StandardModel.h">
       <Filter>Quelldateien\Models</Filter>
     </ClInclude>
-    <ClInclude Include="classes\TriangleSphereModel.h">
-      <Filter>Quelldateien\Models</Filter>
-    </ClInclude>
     <ClInclude Include="classes\FlatColorShader.h">
       <Filter>Quelldateien\Shader</Filter>
     </ClInclude>
@@ -137,6 +134,9 @@
       <Filter>Quelldateien\DataClasses</Filter>
     </ClInclude>
     <ClInclude Include="classes\Satellite.h">
+      <Filter>Quelldateien\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\TriangleSphereModel.h">
       <Filter>Quelldateien\Models</Filter>
     </ClInclude>
   </ItemGroup>
