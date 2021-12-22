@@ -19,18 +19,18 @@
 class Manager
 {
 public:
-    Manager(GLFWwindow* pWin);
-    void start();
-    void update(double deltaT);
-    void draw();
-    void end();
+  Manager(GLFWwindow* pWin);
+  void start();
+  void update(double deltaT);
+  void draw();
+  void end();
 protected:
-    Camera Cam;
+  Camera Cam;
 	std::vector<std::unique_ptr<Satellite>> satellites;
 	GLFWwindow* pWindow;
 	std::vector<std::unique_ptr<StandardModel>> uModels;
 	std::vector<std::unique_ptr<TriangleSphereModel>> planets;
-	
+	std::unique_ptr<TriangleSphereModel> instanceModel{};
 	float timeScale = 1.0f;
 	
 	void addEarth();

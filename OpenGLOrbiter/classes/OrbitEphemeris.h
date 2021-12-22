@@ -16,6 +16,8 @@ public:
 	double trueAnomaly;  // T
 	
 	double getEllipseOrbitalPeriod(bool forceReCalc=false);
+	Vector _getR0_raw() const noexcept { return r0;  } ;
+	Vector _getV0_raw() const noexcept { return v0;  };
 	Vector getR0();
 	Vector getV0();
 	void updateR0V0(Vector nextR0, Vector nextV0);

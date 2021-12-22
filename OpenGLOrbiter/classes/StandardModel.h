@@ -14,15 +14,15 @@
 class StandardModel
 {
 public:
-    StandardModel();
-    virtual ~StandardModel();
-    virtual void draw(const BaseCamera& Cam);
+  StandardModel();
+  virtual ~StandardModel();
+  virtual void draw(const BaseCamera& Cam);
 	const Matrix& transform();
 	void transform(Matrix pMatrix);
 	virtual void setShader(std::unique_ptr<StandardShader> uPShader);
 
-protected:
 	std::unique_ptr<StandardShader> uShader;
+protected:
 	Matrix uTransform;
 };
 

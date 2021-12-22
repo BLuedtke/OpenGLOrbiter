@@ -67,7 +67,7 @@ int main () {
 		double lastTime = 0.0;
 		Manager App(window);
 		App.start();
-		glfwSwapInterval(1);
+		//glfwSwapInterval(1);
 		while (!glfwWindowShouldClose(window)) {
 			// once per frame
 			double now = glfwGetTime();

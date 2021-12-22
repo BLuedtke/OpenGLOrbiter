@@ -38,10 +38,10 @@ public:
     virtual void activate(const BaseCamera& Cam) const;
 
 protected:    
+  GLuint ShaderProgram;
 	GLuint createShaderProgram(std::string* VS_String, std::string* FS_String);
-    GLuint ShaderProgram;
-    Matrix ModelTransform;
-    static const StandardShader* ShaderNowPiped;
+  Matrix ModelTransform;
+  static const StandardShader* ShaderNowPiped;
 };
 
 #endif /* StandardShader_hpp */

@@ -3,9 +3,9 @@
     //  Created by Philipp Lensing.
 
 
-#include "PhongShader.h"
+#include "PhongShaderInstanced.h"
 
-const char *VertexShaderCode =
+const char* VertexShaderCodeX =
 "#version 400\n"
 "layout(location=0) in vec4 VertexPos;"
 "layout(location=1) in vec4 VertexNormal;"
@@ -15,16 +15,18 @@ const char *VertexShaderCode =
 "out vec2 Texcoord;"
 "uniform mat4 ModelMat;"
 "uniform mat4 ModelViewProjMat;"
+"uniform vec4 VOffsets[128];"
 "void main()"
 "{"
-"    Position = (ModelMat * VertexPos).xyz;"
+"    vec4 vPosOffset = VertexPos + VOffsets[gl_InstanceID];"
+"    Position = (ModelMat * vPosOffset).xyz;"
 "    Normal =  (ModelMat * VertexNormal).xyz;"
 "    Texcoord = VertexTexcoord;"
 "    gl_Position = ModelViewProjMat * VertexPos;"
 "}";
 
 
-const char *FragmentShaderCode =
+const char *FragmentShaderCodeX =
 "#version 400\n"
 "uniform vec3 EyePos;"
 "uniform vec3 LightPos;"
@@ -54,6 +56,97 @@ const char *FragmentShaderCode =
 "    FragColor = vec4((DiffuseComponent + AmbientColor)*DiffTex + SpecularComponent ,0);"
 "}";
 
+PhongShaderInstanced::PhongShaderInstanced()
+{
+	std::cout << "Constructor PhongShaderInstanced\n";
+	cvCode = std::make_unique<std::string>(VertexShaderCodeX);
+	cfCode = std::make_unique<std::string>(FragmentShaderCodeX);
+	//std::string* cv = new std::string(VertexShaderCode);
+	//std::string* cf = new std::string(FragmentShaderCode);
+	ShaderProgram = createShaderProgram(cvCode.get(), cfCode.get());
+	std::cout << "   Shaderprogram: " << ShaderProgram << "\n";
+	assignLocations(); //Handles initialisation of Locations
+	glUseProgram(ShaderProgram);
+	glEnableVertexAttribArray(VOffsetsLoc);
+	//glVertexAttribDivisor(VOffsetsLoc, 1);
+	glVertexAttribDivisor(VOffsetsLoc, 1);
+	//TODO CONTINUE HERE/ABOVE; THAT DIDNT REALLY WORK
+	glUseProgram(0);
+}
+
+
+void PhongShaderInstanced::activate(const BaseCamera& Cam) const
+{
+	//std::cout << "Instanced Shader Activated\n";
+	StandardShader::activate(Cam);
+	// update uniforms if necessary
+	if (UpdateState & DIFF_COLOR_CHANGED)
+		glUniform3f(DiffuseColorLoc, DiffuseColor.R, DiffuseColor.G, DiffuseColor.B);
+	if (UpdateState & AMB_COLOR_CHANGED)
+		glUniform3f(AmbientColorLoc, AmbientColor.R, AmbientColor.G, AmbientColor.B);
+	if (UpdateState & SPEC_COLOR_CHANGED)
+		glUniform3f(SpecularColorLoc, SpecularColor.R, SpecularColor.G, SpecularColor.B);
+	if (UpdateState & SPEC_EXP_CHANGED)
+		glUniform1f(SpecularExpLoc, SpecularExp);
+
+	DiffuseTexture->activate(0);
+	if (UpdateState & DIFF_TEX_CHANGED && DiffuseTexture)
+		glUniform1i(DiffuseTexLoc, 0);
+
+	if (UpdateState & LIGHT_COLOR_CHANGED)
+		glUniform3f(LightColorLoc, LightColor.R, LightColor.G, LightColor.B);
+	if (UpdateState & LIGHT_POS_CHANGED)
+		glUniform3f(LightPosLoc, LightPos.X, LightPos.Y, LightPos.Z);
+
+	if (UpdateState & POSITIONS_CHANGED) {
+		for (auto i = 0; i < instancePositions.size(); ++i) {
+			glUniform4f(glGetUniformLocation(ShaderProgram, ("VOffsets[" + std::to_string(i) + "]").c_str()), instancePositions.at(i).X, instancePositions.at(i).Y, instancePositions.at(i).Z, 0.0f);
+			//glUniform4f(glGetUniformLocation(ShaderProgram, ("VOffsets["+ std::to_string(i)+"]").c_str()), 2.0f, 2.0f, 2.0f, 2.0f);
+		}
+	}
+	//GLint instAttrib = glGetUniformLocation(ShaderProgram, "VOffsets[0]");
+	//std::cout << "VOffsetsLoc: " << VOffsetsLoc << "\n";
+	
+
+
+	// always update matrices
+	Matrix ModelViewProj = Cam.getProjectionMatrix() * Cam.getViewMatrix() * modelTransform();
+	glUniformMatrix4fv(ModelMatLoc, 1, GL_FALSE, modelTransform().m);
+	glUniformMatrix4fv(ModelViewProjLoc, 1, GL_FALSE, ModelViewProj.m);
+
+	Vector EyePos = Cam.position();
+	glUniform3f(EyePosLoc, EyePos.X, EyePos.Y, EyePos.Z);
+
+	UpdateState = 0x0;
+}
+
+void PhongShaderInstanced::setInstancePositions(std::vector<Vector>&& __instance_Positions)
+{
+	//std::cout << "New Positions are being set\n";
+	this->instancePositions = std::move(__instance_Positions);
+	UpdateState |= POSITIONS_CHANGED;
+}
+
+void PhongShaderInstanced::assignLocations()
+{
+	DiffuseColorLoc = glGetUniformLocation(ShaderProgram, "DiffuseColor");
+	AmbientColorLoc = glGetUniformLocation(ShaderProgram, "AmbientColor");
+	SpecularColorLoc = glGetUniformLocation(ShaderProgram, "SpecularColor");
+	SpecularExpLoc = glGetUniformLocation(ShaderProgram, "SpecularExp");
+	DiffuseTexLoc = glGetUniformLocation(ShaderProgram, "DiffuseTexture");
+	LightPosLoc = glGetUniformLocation(ShaderProgram, "LightPos");
+	LightColorLoc = glGetUniformLocation(ShaderProgram, "LightColor");
+	EyePosLoc = glGetUniformLocation(ShaderProgram, "EyePos");
+	ModelMatLoc = glGetUniformLocation(ShaderProgram, "ModelMat");
+	ModelViewProjLoc = glGetUniformLocation(ShaderProgram, "ModelViewProjMat");
+	VOffsetsLoc = glGetUniformLocation(ShaderProgram, "VOffsets");
+	std::cout << "offsetsLoc " << VOffsetsLoc << "\n";
+
+}
+
+
+
+/*
 PhongShader::PhongShader() :
 	DiffuseColor(0.8f, 0.8f, 0.8f),
 	SpecularColor(0.5f, 0.5f, 0.5f),
@@ -64,13 +157,9 @@ PhongShader::PhongShader() :
 	DiffuseTexture(Texture::defaultTex()),
 	UpdateState(0xFFFFFFFF)
 {
-	std::cout << "Constructor PhongShader\n";
-	cvCode = std::make_unique<std::string>(VertexShaderCode);
-	cfCode = std::make_unique<std::string>(FragmentShaderCode);
-	//std::string* cv = new std::string(VertexShaderCode);
-	//std::string* cf = new std::string(FragmentShaderCode);
-	ShaderProgram = createShaderProgram(cvCode.get(), cfCode.get());
-	std::cout << "   Shaderprogram: " << ShaderProgram << "\n";
+	std::string* cv = new std::string(VertexShaderCode);
+	std::string* cf = new std::string(FragmentShaderCode);
+	ShaderProgram = createShaderProgram(cv, cf);
 	assignLocations(); //Handles initialisation of Locations
 }
 void PhongShader::assignLocations()
@@ -160,3 +249,4 @@ void PhongShader::diffuseTexture(const Texture* pTex)
 }
 
 
+*/

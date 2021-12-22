@@ -12,18 +12,11 @@
 #define DEG_TO_RAD(x) ((x)*0.0174532925)
 #define RAD_TO_DEG(x) ((x)*57.2957795)
 
-#define sizeFactor (1.0f/6378.0f)
-
-// If you want to change it, change it in the OrbitalEphemeris.cpp as well.
-#ifndef mu
+// If you want to change it, change it in the OrbitalEphemeris.cpp as well. ///TODO: move to constants
 // This uses the unit km³/s², NOT m³/s²!!
-#define mu (double)398600
-#endif // !mu
-
-#ifndef sqMU
-#define sqMU std::sqrt(mu)
-#endif // !sqMU
-
+constexpr double mu = 398600.0;
+constexpr double sqMU = 631.34776470658387846982160428348675796819064249894744823745763911;
+constexpr double sizeFactor = 1.0 / 6378.0;
 
 using std::cout;
 using std::endl;
@@ -39,7 +32,7 @@ double timeInMilliSeconds(time_point start, time_point end) {
 }
 
 
-long long factorial(int n)
+constexpr long long factorial(int n)
 {
 	return (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
 }
@@ -121,7 +114,7 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 		const Vector rN = computeRVec(f, g);
 		
 		//TESTING alternate 4.4-13
-		const auto z = computeZ(x);
+		//const auto z = computeZ(x);
 		//Vector r0 = this->ephemeris.getR0();
 		//Vector v0 = this->ephemeris.getV0();
 		//double rTestLength = pow(x, 2.0) * computeCseries(z) + ((r0.dot(v0)) / (sqMU)) * x * (1.0 - z * computeSseries(z)) + r0.length() * (1.0 - z * computeCseries(z));
@@ -158,6 +151,59 @@ void Satellite::calcKeplerProblem(double timePassed, double t0)
 	}
 }
 
+void Satellite::calcKeplerProblem_experimental(double timePassed, double t0)
+{
+	if (this->ephemeris.semiMajorA == 0.0) {
+		std::cerr << "Semi Major Axis is 0, abort kepler calc" << std::endl;
+		return;
+	}
+	const auto r0Length = ephemeris.getR0().length();
+	//Can now use raw r0 v0 from here on out
+	//Compute first guesses and then use Newton Iteration to find x.
+	const auto diffTime = timePassed - t0;
+	const auto xn = (sqMU * diffTime) / ephemeris.semiMajorA;
+	
+	const auto zn = pow(xn, 2.0) / ephemeris.semiMajorA; //4.4-7
+	const auto tn = ((ephemeris._getR0_raw().dot(ephemeris._getV0_raw()) / sqMU) * pow(xn, 2.0) * computeCseries(zn) + (1.0 - (r0Length / ephemeris.semiMajorA)) * pow(xn, 3.0) * computeSseries(zn) + r0Length * xn) / sqMU;
+	const auto x = xnNewtonIteration_DEV(xn, diffTime, tn, r0Length);
+
+	const auto z = pow(x, 2.0) / ephemeris.semiMajorA;		//4.4-7
+	const auto bigC = computeCseries(z);
+
+	//Evaluate f and g from equations (4.4-31) and (4.4-32)
+	const auto f = (1.0 - (pow(x, 2.0) / r0Length) * bigC);
+	const auto g = (pow(x, 2.0) * (ephemeris._getR0_raw().dot(ephemeris._getV0_raw()) / sqMU) * bigC + r0Length * x * (1.0 - z * bigC)) / sqMU;
+
+	//Now compute r by 4.4-18
+	const auto rN = (ephemeris._getR0_raw() * static_cast<float>(f) + ephemeris._getV0_raw() * static_cast<float>(g));
+	const auto rNLength = rN.length();
+
+	//Evaluate fD and gD from equations 4.4-35 and 4.4-36
+	const auto fD = (sqMU / (static_cast<double>(r0Length) * rNLength)) * x * (z * computeSseries(z) - 1.0);
+	const auto gD = 1.0 - (pow(x, 2.0) / rNLength) * bigC;
+
+	//check for accuracy of f, g, fD, gD
+	const auto test = f * gD - fD * g;
+	if (abs(test) > 1.0 + 1e-10) {
+		//The larger the difference to 1, the higher the error of the determined position
+		cout << "should be near 1: " << abs(test) << endl;
+		cout << "tDelta: " << diffTime << "; xn: " << xn << "; tn: " << tn << "; x: " << x << "; " << endl;
+		//-> TODO handling
+	}
+
+	// Now compute v from 4.4-19
+	const auto vN = (ephemeris._getR0_raw() * static_cast<float>(fD) + ephemeris._getV0_raw() * static_cast<float>(gD));
+
+	if (t0 > 0.0) {
+		this->ephemeris.updateR0V0(rN, vN);
+	}
+	//All calculations are performed in "real" scale (1 unit = 1km), but the coordinate system is not to scale (1 unit = 6378.0km), so scale the vectors down
+	r = rN * static_cast<float>(sizeFactor);
+	v = vN * static_cast<float>(sizeFactor);
+	//std::cout << "Position: " << r.toString() << std::endl;
+	//std::cout << "z: " << z << "; r: " << r.toString() << "; v: " << v.toString() << std::endl;
+}
+
 Vector Satellite::getV() const
 {
 	return this->v;
@@ -192,6 +238,9 @@ double Satellite::computeZ(double x)
 double Satellite::computeCseries(double z)
 {
 	double cz = 0.0;
+	//dangerous test
+	
+	//cout << z << "\n";
 	if (std::abs(z) > 0.0) {
 		//Easy Calculation if z != 0 (albeit different depending on sign)
 		if (z > 0.0) {
@@ -204,7 +253,7 @@ double Satellite::computeCseries(double z)
 	}
 	else {
 		// This is a form of stumpff's formulas which can be used if z is exactly zero to avoid div by zero.
-		std::cout << "bigC Alternative Calc" << std::endl;
+		//std::cout << "bigC Alternative Calc" << std::endl;
 		// Limited to k 0 - 9, because with k=10 we'd have an overflow in the factorial function
 		for (unsigned int k = 0; k < 10; k++) {
 			double res = (pow((-z), (double)k) / factorial(2 * k + 2));
@@ -236,7 +285,7 @@ double Satellite::computeSseries(double z)
 	}
 	else {
 		// This is a form of stumpff's formulas.
-		std::cout << "bigS Alternative Calc" << std::endl;
+		//std::cout << "bigS Alternative Calc" << std::endl;
 		// Limited to k 0 - 8, because with k=9 we'd have an overflow in the factorial function
 		for (unsigned int k = 0; k < 9; k++) {
 			double res = (pow((-z), (double)k) / factorial(2 * k + 3));
@@ -254,18 +303,18 @@ double Satellite::computeSseries(double z)
 // To be used with a trial value for x during the newton iteration
 double Satellite::computeTnByXn(double xn, double zn)
 {
-	const double bigC = computeCseries(zn);
-	const double bigS = computeSseries(zn);
-	const Vector r0 = this->ephemeris.getR0();
-	const Vector v0 = this->ephemeris.getV0();
+	//const double bigC = computeCseries(zn); //V2
+	//const double bigS = computeSseries(zn); //V2
+	//const Vector r0 = this->ephemeris.getR0(); //V3
+	//const Vector v0 = this->ephemeris.getV0(); //V3
 
-	const double term1 = (r0.dot(v0) / sqMU) * pow(xn, 2.0) * bigC;
-	const double term2 = (1.0 - (r0.length() / this->ephemeris.semiMajorA)) * pow(xn, 3.0) * bigS;
-	const double term3 = r0.length() * xn;
+	const double term1 = (ephemeris.getR0().dot(ephemeris.getV0()) / sqMU) * pow(xn, 2.0) * computeCseries(zn);
+	const double term2 = (1.0 - (ephemeris.getR0().length() / this->ephemeris.semiMajorA)) * pow(xn, 3.0) * computeSseries(zn);
+	const double term3 = ephemeris.getR0().length() * xn;
 
-	const double sMuTn = (term1 + term2 + term3) / sqMU;
+	//const double sMuTn = (term1 + term2 + term3) / sqMU;//V2
 	//std::cout << "tnComp. zN: " << zn << " bigC: " << bigC << "; bigS: " << bigS << "; tN: " << ret << std::endl;
-	return sMuTn;
+	return (term1 + term2 + term3) / sqMU;
 }
 
 //4.4-15 Newton iteration
@@ -290,46 +339,80 @@ double Satellite::xnNewtonIteration(double xn, double t, double tn, double zn)
 	return xNext;
 }
 
+double Satellite::xnNewtonIteration_DEV(double xn, double t, double tn, double r0Length)
+{
+	double xNext = xn;
+	double timeN = tn;
+	//double zNext = 0.0;
+	//TODO: Implement NaN checks for calculated values during iteration
+	for (unsigned int i = 0; i < 200; i++) {
+		xNext = xNext + ((t - timeN) / computeNewDtDx_DEV(xNext, r0Length));
+		//const auto zNext = pow(xNext, 2.0) / this->ephemeris.semiMajorA;
+		const auto xNextPow2 = pow(xNext, 2.0);
+		const double term1 = (ephemeris.getR0().dot(ephemeris.getV0()) / sqMU) * xNextPow2 * computeCseries(xNextPow2 / this->ephemeris.semiMajorA);
+		const double term2 = (1.0 - (r0Length / ephemeris.semiMajorA)) * pow(xNext, 3.0) * computeSseries(xNextPow2 / this->ephemeris.semiMajorA);
+		timeN = (term1 + term2 + r0Length * xNext) / sqMU;
+		
+		//Yes, we need to be that precise
+		if ((t - timeN) < 0.0000000000001) {
+			break;
+		}
+	}
+	return xNext;
+}
+
 //4.4-17 with additional division by sqMU -> Required for Newton iteration process only
 double Satellite::computeNewDtDx(double xn)
 {
-	const Vector r0 = this->ephemeris.getR0();
-	const Vector v0 = this->ephemeris.getV0();
-	const double zn = computeZ(xn);
-	const double bigC = computeCseries(zn);
-	const double bigS = computeSseries(zn);
+	//const Vector r0 = this->ephemeris.getR0();//V3
+	//const Vector v0 = this->ephemeris.getV0();//V3
+	const auto xnP2 = pow(xn, 2.0);
+	const double zn = xnP2 / this->ephemeris.semiMajorA;//V5,V6,V11
+	const double bigC = computeCseries(zn); //V2,V6
+	//const double bigS = computeSseries(zn); //V2
 
-	const double term1 = pow(xn, 2.0) * bigC;
-	const double term2 = (r0.dot(v0) / sqMU) * xn * (1.0 - zn * bigS);
-	const double term3 = r0.length() * (1.0 - zn * bigC);
+	const double term1 = xnP2 * bigC;
+	const double term2 = (ephemeris.getR0().dot(ephemeris.getV0()) / sqMU) * xn * (1.0 - zn * computeSseries(zn));
+	const double term3 = ephemeris.getR0().length() * (1.0 - zn * bigC);
 
-	return (term1 + term2 + term3)/sqMU;
+	return (term1 + term2 + term3) / sqMU;
+}
+
+double Satellite::computeNewDtDx_DEV(double xn, double r0Length)
+{
+	const auto xnP2 = pow(xn, 2.0);
+	const auto zn = xnP2 / this->ephemeris.semiMajorA;
+	const auto bigC = computeCseries(zn);
+	//const double term1 = xnP2 * bigC;
+	const double term2 = (ephemeris.getR0().dot(ephemeris.getV0()) / sqMU) * xn * (1.0 - zn * computeSseries(zn));
+	//const double term3 = r0Length * (1.0 - zn * bigC);
+	return (xnP2 * bigC + term2 + r0Length * (1.0 - zn * bigC)) / sqMU;
 }
 
 //4.4-18
 Vector Satellite::computeRVec(double f, double g)
 {
-	const Vector r0 = this->ephemeris.getR0();
-	const Vector v0 = this->ephemeris.getV0();
+	//const Vector r0 = this->ephemeris.getR0();//V3
+	//const Vector v0 = this->ephemeris.getV0();//V3
 	
-	const Vector rN = (r0 * static_cast<float>(f) + v0 * static_cast<float>(g));
-	return rN;
+	//const Vector rN = (r0 * static_cast<float>(f) + v0 * static_cast<float>(g));//V2
+	return (ephemeris.getR0() * static_cast<float>(f) + ephemeris.getV0() * static_cast<float>(g));
 }
 
 //4.4-19
 Vector Satellite::computeVVec(double fD, double gD)
 {
-	const Vector r0 = this->ephemeris.getR0();
-	const Vector v0 = this->ephemeris.getV0();
+	//const Vector r0 = this->ephemeris.getR0();//V3
+	//const Vector v0 = this->ephemeris.getV0();//V3
 	
-	return r0 * static_cast<float>(fD) + v0 * static_cast<float>(gD);
+	return (ephemeris.getR0() * static_cast<float>(fD) + ephemeris.getV0() * static_cast<float>(gD));
 }
 
 //4.4-31
 double Satellite::computeSmallF(double x)
 {
-	const double bigC = computeCseries(computeZ(x));
-	return (1.0 - (pow(x, 2.0) / this->ephemeris.getR0().length()) * bigC);
+	//const double bigC = computeCseries(computeZ(x));//V2
+	return (1.0 - (pow(x, 2.0) / this->ephemeris.getR0().length()) * computeCseries(computeZ(x)));
 }
 
 //4.4-32
@@ -337,29 +420,29 @@ double Satellite::computeSmallF(double x)
 // 4.4-32 (which is being used here) does produce correct results even if t is larger than a few seconds
 double Satellite::computeSmallG(double x, double t)
 {
-	const Vector r0 = this->ephemeris.getR0();
-	const Vector v0 = this->ephemeris.getV0();
-	const double z = computeZ(x);
-	const double bigS = computeSseries(z);
-	const double bigC = computeCseries(z);
-	const double gSmall = (pow(x, 2.0) * (r0.dot(v0) / sqMU) * bigC + r0.length()*x*(1.0 - z * bigS)) / sqMU;
-	return gSmall;
+	//const Vector r0 = this->ephemeris.getR0();//V3
+	//const Vector v0 = this->ephemeris.getV0();//V3
+	const double z = computeZ(x);//V5,V6
+	//const double bigS = computeSseries(z); //V2
+	//const double bigC = computeCseries(z); //V2
+	//const double gSmall = (pow(x, 2.0) * (r0.dot(v0) / sqMU) * computeCseries(z) + r0.length()*x*(1.0 - z * computeSseries(z))) / sqMU; //V2
+	return (pow(x, 2.0) * (ephemeris.getR0().dot(ephemeris.getV0()) / sqMU) * computeCseries(z) + ephemeris.getR0().length() * x * (1.0 - z * computeSseries(z))) / sqMU;
 }
 
 //4.4-35
 double Satellite::computeSmallGDerivative(double x, double rLength)
 {
-	const auto bigC = computeCseries(computeZ(x));
-	return 1.0 - (pow(x, 2.0) / rLength) * bigC;
+	//const auto bigC = computeCseries(computeZ(x));//V2
+	return 1.0 - (pow(x, 2.0) / rLength) * computeCseries(computeZ(x));
 }
 
 //4.4-36
 double Satellite::computeSmallFDerivative(double x, double rLength)
 {
-	const auto z = computeZ(x);
-	const auto bigS = computeSseries(computeZ(x));
-	const auto r0Length = this->ephemeris.getR0().length();
-	return (sqMU / (r0Length*rLength)) * x * (z * bigS - 1.0);
+	const auto z = computeZ(x);//V5,V6
+	//const auto bigS = computeSseries(z);//V2
+	//const auto r0Length = this->ephemeris.getR0().length();//V4
+	return (sqMU / (ephemeris.getR0().length() * rLength)) * x * (z * computeSseries(z) - 1.0);
 }
 
 //4.5-10
@@ -373,47 +456,49 @@ double Satellite::computeXfirstGuess(double t)
 // Call this every frame to update the satellite's position in orbit.
 void Satellite::update(double deltaT)
 {
+	//TODO Rewrite Update Process to switch to consistent physic timesteps + interpolation instead of calculating at every frame
+	if (totalTime > ephemeris.getEllipseOrbitalPeriod()) {
+		orbits++;
+		float currentR0Length = this->ephemeris.getR0().length();
+		//cout << orbits << " Orbits. RLength: " << currentR0Length << "; R-Llastorbit: " << lastOrbitR0Length << "; Diff: " << currentR0Length - lastOrbitR0Length << endl;
+		//cout << "V0 Length: " << this->ephemeris.getV0().length() << endl;
+		this->lastOrbitR0Length = currentR0Length;
+		//Debugging Rounding Errors stuff with a satellite with eccentricity 0 -> Will absolutely fail with other sats
+		this->ephemeris.semiMajorA = currentR0Length;
+		//Still debugging -> Force recalculation of expected orbital period with adjusted SemiMajorAxis, to collect data on the rounding error per orbit
+		//double newPeriod = ephemeris.getEllipseOrbitalPeriod(true);
+		//cout << "next expected orbital period: " << newPeriod << endl;
+		//This is done to keep the value for totalTime in a reasonable range. Should replace this with a simpler/more intuitive overflow check
+		totalTime = totalTime - ephemeris.getEllipseOrbitalPeriod();
+	}
+	//cout << deltaT << endl;
+		
+	double t0 = totalTime;
+	totalTime += deltaT;
+	//Prevent Time Delta from getting too low - extremely naive fix. This will likely cause stuttering and incorrect flight times on some configurations. However, if a pc is limited
+	// to 60fps or 75fps (such is the case for @BLuedtke), it'll work.
+	if (deltaT < 0.013 && savedTime < 0.013) {
+		savedTime += deltaT;
+		//std::cout << "SavedTime" << std::endl;
+	}
+	else {
+		//calcKeplerProblem(totalTime, totalTime-(savedTime+deltaT));
+		calcKeplerProblem_experimental(totalTime, totalTime - (savedTime + deltaT));
+		savedTime = 0;
+	}
+		
+	Matrix f = Matrix();
+	f.translation(r);
+	uTransform = f;
+	/*
 	try
 	{
-		//TODO Rewrite Update Process to switch to consistent physic timesteps + interpolation instead of calculating at every frame
-		if (totalTime > ephemeris.getEllipseOrbitalPeriod()) {
-			orbits++;
-			float currentR0Length = this->ephemeris.getR0().length();
-			//cout << orbits << " Orbits. RLength: " << currentR0Length << "; R-Llastorbit: " << lastOrbitR0Length << "; Diff: " << currentR0Length - lastOrbitR0Length << endl;
-			//cout << "V0 Length: " << this->ephemeris.getV0().length() << endl;
-			this->lastOrbitR0Length = currentR0Length;
-			//Debugging Rounding Errors stuff with a satellite with eccentricity 0 -> Will absolutely fail with other sats
-			this->ephemeris.semiMajorA = currentR0Length;
-			//Still debugging -> Force recalculation of expected orbital period with adjusted SemiMajorAxis, to collect data on the rounding error per orbit
-			//double newPeriod = ephemeris.getEllipseOrbitalPeriod(true);
-			//cout << "next expected orbital period: " << newPeriod << endl;
-			//This is done to keep the value for totalTime in a reasonable range. Should replace this with a simpler/more intuitive overflow check
-			totalTime = totalTime - ephemeris.getEllipseOrbitalPeriod();
-		}
-		//cout << deltaT << endl;
-		
-		double t0 = totalTime;
-		totalTime += deltaT;
-		//Prevent Time Delta from getting too low - extremely naive fix. This will likely cause stuttering and incorrect flight times on some configurations. However, if a pc is limited
-		// to 60fps or 75fps (such is the case for @BLuedtke), it'll work.
-		if (deltaT < 0.013 && savedTime < 0.013) {
-			savedTime += deltaT;
-			//std::cout << "SavedTime" << std::endl;
-		}
-		else {
-			calcKeplerProblem(totalTime, totalTime-(savedTime+deltaT));
-			savedTime = 0;
-		}
-		
-		Matrix f = Matrix();
-		f.translation(r);
-		uTransform = f;
 	}
 	catch (const std::exception& e)
 	{
 		std::cout << "Sat Update Exception occured" << std::endl;
 		std::cout << e.what() << std::endl;
-	}
+	}/**/
 }
 
 
@@ -438,15 +523,19 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	//Required for orbits with periods >~333 hours
 	if (stepper * 10000 < this->ephemeris.getEllipseOrbitalPeriod()) {
 		maxSteps = (int)(this->ephemeris.getEllipseOrbitalPeriod() / 120)+1;
-		cout << "calcOrbitVis Changing max Steps to " << maxSteps << endl;
+		cout << "calcOrbitVis Changing max Steps to " << maxSteps << "\n";
 	}
 	
 	while (runner < maxSteps) {
 		this->totalTime += stepper;
-		t1 = std::chrono::high_resolution_clock::now();
-		this->calcKeplerProblem(this->totalTime, this->totalTime-stepper);
-		t2 = std::chrono::high_resolution_clock::now();
+
+		t1 = std::chrono::steady_clock::now();
+		//this->calcKeplerProblem(this->totalTime, this->totalTime-stepper);
+		this->calcKeplerProblem_experimental(this->totalTime, this->totalTime-stepper);
+		t2 = std::chrono::steady_clock::now();
+		
 		totalTimeMilli += timeInMilliSeconds(t1, t2);
+		
 		if (r.lengthSquared() > 0.000001f) {
 			resVec.push_back(r);
 		}
@@ -459,14 +548,14 @@ std::vector<Vector> Satellite::calcOrbitVis()
 	this->ephemeris.trueAnomaly = startAngle;
 	this->totalTime = 0.0;
 	this->ephemeris.updateR0V0(r0s, v0s);
-	//cout << "Total time taken for all calcKepler: " << totalTimeMilli << endl;
-	//cout << "Avg: " << (totalTimeMilli / (double)runner) << endl;
+	//cout << "t calcKepler: " << totalTimeMilli << "\n";
+	cout << "Avg: " << (totalTimeMilli / static_cast<double>(runner)) << "\n";
 	//cout << "Runner: " << runner << "; MaxSteps: " << maxSteps << "; timestep size (s): " << stepper << endl;
 	//Just for testing:
 	//cout << "Orbital Period according to Semi-Major Axis formula: " << ephemeris.getEllipseOrbitalPeriod() << endl;
 	//cout << "Points for vis: " << resVec.size() << endl;
-	cout << "Finished Calculating Orbit Line" << endl;
-	cout << "Starting Position: " << this->ephemeris.getR0().toString() << std::endl;
+	//cout << "Finished Calculating Orbit Line" << endl;
+	//cout << "Starting Position: " << this->ephemeris.getR0().toString() << std::endl;
 	return (resVec);
 }
 

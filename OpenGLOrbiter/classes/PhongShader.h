@@ -22,6 +22,8 @@
 #endif
 #include <iostream>
 #include <assert.h>
+#include <memory>
+#include <string>
 #include "color.h"
 #include "vector.h"
 #include "matrix.h"
@@ -33,6 +35,7 @@ class PhongShader : public StandardShader
 {
 public:
 	PhongShader();
+	virtual ~PhongShader() {};
 	// setter
 	void diffuseColor(const Color& c);
 	void ambientColor(const Color& c);
@@ -51,8 +54,9 @@ public:
 	const Color& lightColor() const { return LightColor; }
 
 	virtual void activate(const BaseCamera& Cam) const;
-private:
-	void assignLocations();
+
+protected:
+	virtual void assignLocations();
 
 	Color DiffuseColor;
 	Color SpecularColor;
@@ -61,6 +65,8 @@ private:
 	Vector LightPos;
 	Color LightColor;
 	const Texture* DiffuseTexture;
+	std::unique_ptr<std::string> cvCode{};
+	std::unique_ptr<std::string> cfCode{};
 
 	GLint DiffuseColorLoc;
 	GLint SpecularColorLoc;

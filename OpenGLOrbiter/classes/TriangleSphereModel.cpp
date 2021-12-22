@@ -51,7 +51,20 @@ void TriangleSphereModel::draw(const BaseCamera& Cam)
     
     VB.activate();
     IB.activate();
-    glDrawElements(GL_TRIANGLES, IB.indexCount(), IB.indexFormat(), 0);
+    if (instanced) {
+      //glVertexAttribPointer()
+      //glDrawArraysInstanced(GL_TRIANGLES, )
+      //GLint instAttrib = glGetAttribLocation(uShader->ShaderProgram, "VOffsets[]");
+      //std::cout << "Instattrib: " << instAttrib << "\n";
+      //glEnableVertexAttribArray(instAttrib);
+      //glVertexAttribPointer(instAttrib, 1000, , GL_FALSE, sizeof(float), 0);
+      //glVertexAttribDivisor(instAttrib, 1);
+      glDrawElementsInstanced(GL_TRIANGLES, IB.indexCount(), IB.indexFormat(), (void*)0, 50);
+      //glDrawArraysInstanced(GL_TRIANGLES, IB.indexCount(), IB.indexFormat(), 1000);
+    }
+    else {
+      glDrawElements(GL_TRIANGLES, IB.indexCount(), IB.indexFormat(), 0);
+    }
     IB.deactivate();
     VB.deactivate();
 }

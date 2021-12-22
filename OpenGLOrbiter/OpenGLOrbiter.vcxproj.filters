@@ -83,6 +83,9 @@
     <ClCompile Include="classes\Satellite.cpp">
       <Filter>Quelldateien\Models</Filter>
     </ClCompile>
+    <ClCompile Include="classes\PhongShaderInstanced.cpp">
+      <Filter>Quelldateien\Shader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="classes\Manager.h">
@@ -138,6 +141,9 @@
     </ClInclude>
     <ClInclude Include="classes\TriangleSphereModel.h">
       <Filter>Quelldateien\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="classes\PhongShaderInstanced.h">
+      <Filter>Quelldateien\Shader</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

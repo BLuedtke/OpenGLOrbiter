@@ -17,6 +17,7 @@
 #endif
 #endif
 
+#include "PhongShaderInstanced.h"
 #include "lineplanemodel.h"
 #include "trianglespheremodel.h"
 #include "Satellite.h"
@@ -25,6 +26,7 @@
 //Debug/Time measurement
 #include <iostream>
 #include <chrono>
+#include <omp.h>
 
 #ifdef WIN32
 #define ASSET_DIRECTORY "../../assets/"
@@ -51,18 +53,34 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	cout << "Timescale: " << timeScale << "\n";
 
 	addEarth();
-	
+	double t = 0.01;
+	/*
+	for (auto i = 0; i < 1000; ++i) {
+		addSatellite(60975.0, t, t, t, 0.00, 0.00, true, true);
+		t += t;
+		if (t > 1000000000.0) {
+			t = 0.01 * i;
+		}
+		//cout << "t: " << t << "\n";
+	}/**/
+	/**/
 	addSatellite(60975.0, 0.00, 0.00, 0.00, 0.00, 0.00, true, true);
-	addSatellite(60675.0, 0.00, 0.00, 0.00, 0.00, 0.00, true, true);
-	addSatellite(60375.0, 0.01, 0.01, 0.01, 0.01, 0.01, true, true);
-	
-	//addSatellite(22164.0, 0.01, 0.01, 0.01, 0.01, 0.01, true, true);
-	//addSatellite(20550.0, 300., 0., 0., 0., 0);
-	//addSatellite(7500, 300., 50., 280., 0.0, 0);
-	//addSatellite(7500, 100., 20., 210., 0.1, 0);
-	//addSatellite(12500, 200., 10., 250., 0.3, 0);
-	//addSatellite(21164.0f, 0.0f, 39.0f, 0.0f, 0.6f);
-
+	addSatellite(60675.0, 0.00, 0.2, 2.00, 0.01, 0.00, true, true);
+	addSatellite(60375.0, 0.00, 0.6, 4.0, 0.02, 0.01, true, true);
+	addSatellite(60375.0, 0.00, 1.8, 8.0, 0.03, 0.01, true, true);
+	addSatellite(60375.0, 0.00, 5.4, 16.0, 0.04, 0.01, true, true);
+	addSatellite(60375.0, 0.00, 16.2, 32.0, 0.05, 0.01, true, true);
+	addSatellite(60375.0, 0.00, 48.6, 64.0, 0.06, 0.01, true, true);
+	addSatellite(60375.0, 0.00, 145.8, 128.0, 0.07, 0.01, true, true);
+	/**/
+	/*
+	addSatellite(22164.0, 0.01, 0.01, 0.01, 0.01, 0.01, true, true);
+	addSatellite(20550.0, 300., 0., 0., 0., 0);
+	addSatellite(7500, 300., 50., 280., 0.0, 0);
+	addSatellite(7500, 100., 20., 210., 0.1, 0);
+	addSatellite(12500, 200., 10., 250., 0.3, 0);
+	addSatellite(21164.0f, 0.0f, 39.0f, 0.0f, 0.6f);
+	/**/
 	/*
 	// THIS IS THE GPS 'CONSTELLATION' -> with realistic orbital elements.
 	//TODO Switch the parameters to doubles.
@@ -103,7 +121,15 @@ Manager::Manager(GLFWwindow* pWin) : pWindow(pWin), Cam(pWin)
 	//addSatellite(9164.0f, 0.0f, 90.0f, 0.0f, 0.2f);
 
 	/**/
+	std::cout << "Satellites added.\n";
 	addEquatorLinePlane();
+	std::cout << "Plane added.\n";
+	instanceModel = std::make_unique<TriangleSphereModel>(0.03, 12, 24);
+	auto instanceShader = std::make_unique<PhongShaderInstanced>();
+	instanceModel->setShader(std::move(instanceShader));
+	instanceModel->transform(Matrix());
+	instanceModel->instanced = true;
+	std::cout << "Instancer added.\n";
 }
 
 //addSat Params: semi Major Axis, longitude of ascending node, inclination, argument of periapsis, eccentricity, true Anomaly, orbitVisualisation, fullLine
@@ -117,6 +143,7 @@ void Manager::addSatellite(double semiA, double lAscN, double incli, double argP
 void Manager::addSatellite(OrbitEphemeris o, bool orbitVis, bool fullLine, Color satColor)
 {
 	unique_ptr<PhongShader> uShader = std::make_unique<PhongShader>();
+	//auto uShader = std::make_unique<PhongShaderInstanced>();
 	uShader->diffuseColor(satColor);
 	std::unique_ptr<Satellite> sat = std::make_unique<Satellite>(0.03f,o);
 	sat->setShader(std::move(uShader));
@@ -170,12 +197,14 @@ void Manager::start()
 void Manager::update(double deltaT)
 {
 	deltaT *= timeScale;
-	for (unsigned int i = 0; i < satellites.size(); i++)
+	int limit = satellites.size();
+	//#pragma omp parallel for 
+	for (int i = 0; i < limit; ++i)
 	{
-		satellites[i]->update(deltaT);
+		satellites.at(i)->update(deltaT);
 	}
 	//For earth rotation. 
-	const double coeff = (deltaT / 86400.0)*DEG_TO_RAD(360);
+	const double coeff = (deltaT / 86400.0)* DEG_TO_RAD(360.0);
 	for (unsigned int k = 0; k < planets.size(); k++) {
 		Matrix t = planets[k]->transform();
 		Matrix r = Matrix().rotationY(coeff);
@@ -186,25 +215,33 @@ void Manager::update(double deltaT)
 
 void Manager::draw()
 {
-    // 1. clear screen
-    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//std::cout << "DrawCall\n";
+  // 1. clear screen
+  glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	//2. Draw models
 	for (unsigned int i = 0; i < uModels.size(); i++) {
 		uModels.at(i)->draw(Cam);
 	}
 	//2.b) Draw Satellites
+	std::vector<Vector> satPositions;
 	for (unsigned int i = 0; i < satellites.size(); i++)
 	{
-		satellites[i]->draw(Cam);
+		//satPositions.push_back(satellites.at(i)->getR());
+		//cout << satPositions[i].X << "; " << satPositions[i].Y << "; " << satPositions[i].Z << "\n";
+		satellites.at(i)->draw(Cam);
 	}
+	//reinterpret_cast<PhongShaderInstanced*>(instanceModel->uShader.get())->setInstancePositions(std::move(satPositions));
+	//instanceModel->draw(Cam);
+	
+	//2.c) Draw Planet(s)
 	for (unsigned int i = 0; i < planets.size(); i++)
 	{
 		planets[i]->draw(Cam);
 	}
-    // 3. check once per frame for opengl errors
-    GLenum Error = glGetError();
-    assert(Error==0);
+  // 3. check once per frame for opengl errors
+  GLenum Error = glGetError();
+  assert(Error==0);
 }
 
 

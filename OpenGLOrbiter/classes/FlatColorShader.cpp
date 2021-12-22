@@ -26,12 +26,12 @@ FlatColorShader::FlatColorShader() : Col(0.2f,0.2f,1.0f)
 {
 	std::string* cv = new std::string(CVertexShaderCode);
 	std::string* cf = new std::string(CFragmentShaderCode);
-    ShaderProgram = createShaderProgram(cv, cf);
+  ShaderProgram = createShaderProgram(cv, cf);
 	
-    ColorLoc = glGetUniformLocation(ShaderProgram, "Color");
-    assert(ColorLoc>=0);
-    ModelViewProjLoc  = glGetUniformLocation(ShaderProgram, "ModelViewProjMat");
-    assert(ModelViewProjLoc>=0);
+  ColorLoc = glGetUniformLocation(ShaderProgram, "Color");
+  assert(ColorLoc>=0);
+  ModelViewProjLoc  = glGetUniformLocation(ShaderProgram, "ModelViewProjMat");
+  assert(ModelViewProjLoc>=0);
     
 }
 FlatColorShader::FlatColorShader(const Color & c) : Col(c)

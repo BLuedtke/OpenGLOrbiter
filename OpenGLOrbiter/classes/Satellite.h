@@ -9,14 +9,15 @@
 class Satellite : public TriangleSphereModel {
 	
 public:
-	Satellite(float Radius, int Stacks = 18, int Slices = 36);
-	Satellite(float Radius, OrbitEphemeris eph, int Stacks = 18, int Slices = 36);
+	Satellite(float Radius, int Stacks = 9, int Slices = 18);
+	Satellite(float Radius, OrbitEphemeris eph, int Stacks = 9, int Slices = 18);
 
 	Satellite();
 	~Satellite();
 
 	void update(double dtime);
 	void calcKeplerProblem(double timePassed, double t0);
+	void calcKeplerProblem_experimental(double timePassed, double t0);
 
 	Vector getV() const;
 	Vector getR() const;
@@ -41,8 +42,11 @@ private:
 	double computeXfirstGuess(double t);
 	double computeZ(double x);
 
-	double xnNewtonIteration(double xn, double t, double tn, double xf);
+	double xnNewtonIteration(double xn, double t, double tn, double zn);
+	double xnNewtonIteration_DEV(double xn, double t, double tn, double r0Length);
+
 	double computeNewDtDx(double xn);
+	double computeNewDtDx_DEV(double xn, double r0Length);
 	double computeTnByXn(double x, double z);
 	
 	double computeSmallF(double x);

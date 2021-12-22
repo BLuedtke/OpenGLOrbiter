@@ -15,9 +15,10 @@ class TriangleSphereModel : public StandardModel
 {
 public:
     TriangleSphereModel( float Radius, int Stacks=36, int Slices=72 );
-	void recalcBuffers(float radius);
+	  void recalcBuffers(float radius);
     virtual ~TriangleSphereModel() {}
     virtual void draw(const BaseCamera& Cam);
+    bool instanced;
 protected:
     VertexBuffer VB;
     IndexBuffer IB;

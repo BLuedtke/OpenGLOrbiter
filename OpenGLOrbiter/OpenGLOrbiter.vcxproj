@@ -30,6 +30,7 @@
     <ClCompile Include="classes\OrbitEphemeris.cpp" />
     <ClCompile Include="classes\OrbitLineModel.cpp" />
     <ClCompile Include="classes\PhongShader.cpp" />
+    <ClCompile Include="classes\PhongShaderInstanced.cpp" />
     <ClCompile Include="classes\RGBImage.cpp" />
     <ClCompile Include="classes\Satellite.cpp" />
     <ClCompile Include="classes\StandardModel.cpp" />
@@ -50,6 +51,7 @@
     <ClInclude Include="classes\OrbitEphemeris.h" />
     <ClInclude Include="classes\OrbitLineModel.h" />
     <ClInclude Include="classes\PhongShader.h" />
+    <ClInclude Include="classes\PhongShaderInstanced.h" />
     <ClInclude Include="classes\RGBImage.h" />
     <ClInclude Include="classes\Satellite.h" />
     <ClInclude Include="classes\StandardModel.h" />
@@ -189,6 +191,8 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)..\base\glfw\include;$(ProjectDir)..\base\glew\include;$(ProjectDir)..\base\freeimage\include;</AdditionalIncludeDirectories>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
