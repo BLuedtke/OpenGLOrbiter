@@ -271,32 +271,32 @@ double Satellite::computeCseries(double z)
 //4.4-11
 double Satellite::computeSseries(double z)
 {
-	double sz = 0.0;
-	if (std::abs(z) > 0.0) {
-		//Easy Calculation if z != 0 (albeit different depending on sign)
-		double sqZ = std::sqrt(std::abs(z));
+	using std::sqrt; using std::abs;
+	//Easy Calculation if z != 0 (albeit different depending on sign)
+	if (abs(z) > 0.0) {
+		double sqZ = sqrt(abs(z));
 		if (z > 0.0) {
-			sz = (sqZ - sin(sqZ)) / std::sqrt(pow(z, 3.0));
+			return (sqZ - sin(sqZ)) / sqrt(pow(z, 3.0));
 		} else if (z < 0.0) {
-			sz = (sinh(sqZ) - sqZ) / std::sqrt(pow((-z), 3.0));
+			return (sinh(sqZ) - sqZ) / sqrt(pow((-z), 3.0));
 		} else {
 			std::cout << "computeSseries should NOT land here!" << std::endl;
 		}
 	}
 	else {
 		// This is a form of stumpff's formulas.
-		//std::cout << "bigS Alternative Calc" << std::endl;
 		// Limited to k 0 - 8, because with k=9 we'd have an overflow in the factorial function
-		for (unsigned int k = 0; k < 9; k++) {
-			double res = (pow((-z), (double)k) / factorial(2 * k + 3));
-			if (std::abs(res) != 0.0 && !isnan(sz+res)) {
+		double sz = 0.0;
+		for (unsigned int k = 0; k < 9; ++k) {
+			double res = (pow((-z), static_cast<double>(k)) / factorial(2 * k + 3));
+			if (abs(res) != 0.0 && !isnan(sz+res)) {
 				sz += res;
 			} else {
 				break;
 			}
 		}
+		return sz;
 	}
-	return sz;
 }
 
 //4.4-14

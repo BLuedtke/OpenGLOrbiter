@@ -216,8 +216,8 @@ void Manager::update(double deltaT)
 void Manager::draw()
 {
 	//std::cout << "DrawCall\n";
-  // 1. clear screen
-  glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// 1. clear screen
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	//2. Draw models
 	for (unsigned int i = 0; i < uModels.size(); i++) {
@@ -239,9 +239,9 @@ void Manager::draw()
 	{
 		planets[i]->draw(Cam);
 	}
-  // 3. check once per frame for opengl errors
-  GLenum Error = glGetError();
-  assert(Error==0);
+	// 3. check once per frame for opengl errors
+	GLenum Error = glGetError();
+	assert(Error==0);
 }
 
 
